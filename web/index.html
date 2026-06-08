@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundSwarm Control</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                <h1>SoundSwarm</h1>
+            </div>
+            <div class="status-indicator">
+                <span class="dot active"></span>
+                <span id="session-code">Loading...</span>
+            </div>
+        </header>
+
+        <main>
+            <section class="qr-section glass-panel">
+                <div class="qr-header">
+                    <h2>Scan to Join</h2>
+                    <p>Connect to the same WiFi, then scan.</p>
+                </div>
+                <div class="qr-container">
+                    <img id="qr-image" src="/api/qr" alt="Join QR Code" />
+                </div>
+                <div class="network-info">
+                    <span class="label">Global Latency:</span>
+                    <span id="global-delay" class="value">-- ms</span>
+                </div>
+            </section>
+
+            <section class="devices-section">
+                <div class="section-header">
+                    <h2>Connected Devices (<span id="client-count">0</span>)</h2>
+                </div>
+                <div id="device-list" class="device-grid">
+                    <!-- Devices populated by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Template for a device card -->
+    <template id="device-card-template">
+        <div class="device-card glass-panel">
+            <div class="device-header">
+                <div class="device-icon">
+                    <svg class="icon-phone" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>
+                </div>
+                <h3 class="device-name">Name</h3>
+                <button class="btn-kick" title="Kick Device">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="device-stats">
+                <div class="stat">
+                    <span class="stat-label">Jitter</span>
+                    <span class="stat-value jitter-value">-- ms</span>
+                </div>
+            </div>
+            <div class="device-controls">
+                <select class="channel-select">
+                    <option value="255">Stereo Mix</option>
+                    <option value="0">Front Left</option>
+                    <option value="1">Front Right</option>
+                    <option value="2">Center</option>
+                    <option value="3">LFE (Sub)</option>
+                    <option value="4">Surround Left</option>
+                    <option value="5">Surround Right</option>
+                </select>
+            </div>
+        </div>
+    </template>
+
+    <script src="app.js"></script>
+</body>
+</html>
