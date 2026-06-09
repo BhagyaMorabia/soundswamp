@@ -3,6 +3,10 @@ project(soundswarm_jni)
 
 set(CMAKE_CXX_STANDARD 17)
 
+# Suppress Opus warnings in Debug mode, and force optimization so it doesn't complain about being slow
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2 -Wno-cast-align")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wno-cast-align")
+
 # Oboe (via Prefab)
 find_package(oboe REQUIRED CONFIG)
 
