@@ -9,7 +9,6 @@
 namespace soundswarm {
 
 struct AudioFrame {
-    int64_t captureTimestampUs;
     std::vector<float> pcm;
 };
 
@@ -40,15 +39,10 @@ public:
 private:
     int sampleRate_;
     int channels_;
-    int64_t globalDelayUs_;
 
     std::deque<AudioFrame> frames_;
     size_t frameReadOffset_; // offset within the first frame's PCM vector
     mutable std::mutex mutex_;
-
-    // Jitter tracking (window of last ~500 packets / 5 seconds)
-    std::deque<double> transitTimesMs_;
-    void recordTransitTime(double transitMs);
 };
 
 } // namespace soundswarm

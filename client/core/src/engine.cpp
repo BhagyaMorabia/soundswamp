@@ -2,6 +2,15 @@
 #include <iostream>
 #include <chrono>
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "SoundSwarm_Engine", __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "SoundSwarm_Engine", __VA_ARGS__)
+#else
+#define LOGD(...) do {} while(0)
+#define LOGE(...) do {} while(0)
+#endif
+
 namespace soundswarm {
 
 Engine::Engine(const EngineConfig& config) 
@@ -72,8 +81,10 @@ void Engine::readAudio(float* outPcm, size_t numFrames, int64_t playoutTimestamp
         return;
     }
 
-    // Pull from the jitter buffer. It will handle the clock offset and target latency.
-    jitterBuffer_->pull(outPcm, numFrames, playoutTimestampUs, clockSync_->getOffsetUs());
+    // Pull from the jitter buffer using the server-equivalent playout time
+    size_t written = jitterBuffer_->pull(outPcm, numFrames, playoutTimestampUs, clockSync_->getOffsetUs());
+    LOGD("readAudio: requested=%zu written=%zu offset_us=%lld",
+         numFrames, written, (long long)clockSync_->getOffsetUs());
 }
 
 void Engine::setConnectionCallback(std::function<void(bool, const std::string&)> cb) {
@@ -132,7 +143,12 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
         int64_t localRecvTs = clockSync_->getLocalTimeUs();
         
         std::vector<float> pcm;
-        if (decoder_->decode(pkt.payload.data(), pkt.payload.size(), pcm)) {
+        bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pcm);
+        LOGD("UDP Audio pkt: payload_bytes=%zu decode_ok=%d pcm_frames=%zu seq=%u ts=%lld offset=%lld",
+             pkt.payload.size(), (int)decodeOk, decodeOk ? pcm.size() / config_.channels : 0,
+             pkt.seqNum, (long long)pkt.timestampUs, (long long)clockSync_->getOffsetUs());
+        
+        if (decodeOk) {
             jitterBuffer_->push(pcm.data(), pcm.size() / config_.channels, 
                                 pkt.timestampUs, localRecvTs, clockSync_->getOffsetUs());
         }
