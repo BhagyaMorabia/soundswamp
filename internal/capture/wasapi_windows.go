@@ -171,11 +171,10 @@ func (w *WASAPICapture) Start() error {
 	w.ringRead = 0
 
 	// Initialize audio client with loopback (polling mode)
-	// WASAPI loopback capture does not support event-driven mode on many systems.
-	var bufferDuration int64 = reftimesPerSec / 10 // 100ms buffer
+	// WASAPI loopback capture requires hnsBufferDuration=0 and hnsPeriodicity=0
 	hr = vInitialize(audioClient, audclntSharemode,
 		audclntLoopback,
-		bufferDuration, 0, mixFormatPtr, 0)
+		0, 0, mixFormatPtr, 0)
 	if hr != 0 {
 		return fmt.Errorf("IAudioClient::Initialize failed: 0x%08X", hr)
 	}
@@ -311,12 +310,21 @@ func (w *WASAPICapture) captureLoop() {
 // processCaptureBuffer reads all available data from the WASAPI capture client.
 func (w *WASAPICapture) processCaptureBuffer() {
 	for {
+		var numFramesInNextPacket uint32
+		hr := vGetNextPacketSize(w.captureClient, &numFramesInNextPacket)
+		if hr != 0 || numFramesInNextPacket == 0 {
+			break
+		}
+
 		var dataPtr uintptr
 		var numFrames uint32
 		var flags uint32
 
-		hr := vGetBuffer(w.captureClient, &dataPtr, &numFrames, &flags, nil, nil)
-		if hr != 0 || numFrames == 0 {
+		hr = vGetBuffer(w.captureClient, &dataPtr, &numFrames, &flags, nil, nil)
+		if hr != 0 {
+			break
+		}
+		if numFrames == 0 {
 			break
 		}
 
@@ -561,6 +569,14 @@ func vReleaseBuffer(captureClient uintptr, numFrames uint32) uintptr {
 	vtable := *(*uintptr)(unsafe.Pointer(captureClient))
 	fn := *(*uintptr)(unsafe.Pointer(vtable + 4*unsafe.Sizeof(uintptr(0))))
 	ret, _, _ := callN(fn, captureClient, uintptr(numFrames))
+	return ret
+}
+
+// IAudioCaptureClient::GetNextPacketSize — vtable index 5
+func vGetNextPacketSize(captureClient uintptr, numFrames *uint32) uintptr {
+	vtable := *(*uintptr)(unsafe.Pointer(captureClient))
+	fn := *(*uintptr)(unsafe.Pointer(vtable + 5*unsafe.Sizeof(uintptr(0))))
+	ret, _, _ := callN(fn, captureClient, uintptr(unsafe.Pointer(numFrames)))
 	return ret
 }
 

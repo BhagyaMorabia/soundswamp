@@ -26,6 +26,7 @@ func main() {
 	udpPort := flag.Int("udp-port", 8082, "UDP streaming port")
 	hotspot := flag.Bool("hotspot", false, "Enable captive portal spoofing for hotspot mode")
 	debug := flag.Bool("debug", false, "Enable debug logging")
+	testTone := flag.Bool("test-tone", false, "Generate a 440Hz test tone instead of capturing Windows audio")
 	flag.Parse()
 
 	// 2. Setup logging
@@ -120,7 +121,14 @@ func main() {
 	tcpServer = server.NewTCPServer(tcpConfig)
 
 	// 5. Initialize audio pipeline
-	cap := capture.NewCapture()
+	var cap capture.AudioCapture
+	if *testTone {
+		logger.Info("Using 440Hz test tone generator instead of WASAPI capture")
+		cap = capture.NewTestToneCapture(48000, 2)
+	} else {
+		cap = capture.NewCapture()
+	}
+
 	if err := cap.Start(); err != nil {
 		logger.Error("Failed to start audio capture", "error", err)
 		os.Exit(1)
