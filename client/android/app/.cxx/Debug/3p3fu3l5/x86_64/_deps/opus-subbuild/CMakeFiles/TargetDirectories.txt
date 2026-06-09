@@ -1,3 +1,0 @@
-C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/opus-populate.dir
-C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/edit_cache.dir
-C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/rebuild_cache.dir
