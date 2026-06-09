@@ -12,17 +12,19 @@ int64_t ClockSync::getLocalTimeUs() {
 }
 
 void ClockSync::setOffset(int64_t offsetUs) {
-    std::lock_guard<std::mutex> lock(mutex_);
-    offsetUs_ = offsetUs;
+    // memory_order_release: all prior writes in the network thread are visible
+    // to any thread that subsequently loads with memory_order_acquire.
+    offsetUs_.store(offsetUs, std::memory_order_release);
+}
+
+int64_t ClockSync::getOffsetUs() const {
+    // memory_order_acquire: safe to call from the audio thread.
+    // No mutex, no blocking, no priority inversion.
+    return offsetUs_.load(std::memory_order_acquire);
 }
 
 int64_t ClockSync::getServerTimeUs() const {
     return getLocalTimeUs() + getOffsetUs();
-}
-
-int64_t ClockSync::getOffsetUs() const {
-    std::lock_guard<std::mutex> lock(mutex_);
-    return offsetUs_;
 }
 
 } // namespace soundswarm

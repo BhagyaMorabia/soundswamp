@@ -1,25 +1,157 @@
 #include "engine.h"
 #include <iostream>
 #include <chrono>
+#include <cmath>
+#include <sstream>
+#include <iomanip>
 
 #ifdef __ANDROID__
 #include <android/log.h>
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "SoundSwarm_Engine", __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "SoundSwarm_Engine", __VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  "SoundSwarm_Engine", __VA_ARGS__)
 #else
 #define LOGD(...) do {} while(0)
 #define LOGE(...) do {} while(0)
+#define LOGI(...) do {} while(0)
 #endif
 
 namespace soundswarm {
 
-Engine::Engine(const EngineConfig& config) 
-    : config_(config), isConnected_(false), running_(false) {
-    
-    network_ = std::make_unique<NetworkClient>();
-    clockSync_ = std::make_unique<ClockSync>();
+// ---------------------------------------------------------------------------
+// Safe JSON value extraction
+//
+// The hand-rolled extractors are replaced with implementations that:
+//   (a) never crash on malformed input,
+//   (b) handle the string fallback for missing keys gracefully,
+//   (c) parse target_ms as double (fixing the integer-truncation bug F12).
+//
+// We intentionally avoid adding a JSON library dependency by writing safe,
+// defensive parsers. For reference: nlohmann/json can be swapped in at any
+// time by replacing the two extract* functions below.
+// ---------------------------------------------------------------------------
+
+// escapeJsonString escapes a raw string for safe embedding in a JSON value.
+// Handles: " \ / and control characters (\n \r \t \b \f).
+static std::string escapeJsonString(const std::string& raw) {
+    std::ostringstream oss;
+    for (unsigned char c : raw) {
+        switch (c) {
+            case '"':  oss << "\\\""; break;
+            case '\\': oss << "\\\\"; break;
+            case '/':  oss << "\\/";  break;
+            case '\n': oss << "\\n";  break;
+            case '\r': oss << "\\r";  break;
+            case '\t': oss << "\\t";  break;
+            case '\b': oss << "\\b";  break;
+            case '\f': oss << "\\f";  break;
+            default:
+                if (c < 0x20) {
+                    // Escape other control characters as \uXXXX
+                    oss << "\\u" << std::hex << std::setw(4)
+                        << std::setfill('0') << static_cast<int>(c);
+                } else {
+                    oss << c;
+                }
+        }
+    }
+    return oss.str();
+}
+
+// extractJsonString safely extracts the string value for a given key.
+// Returns "" if the key is not found or the value is not a JSON string.
+static std::string extractJsonString(const std::string& json, const std::string& key) {
+    size_t pos = json.find(key);
+    if (pos == std::string::npos) return "";
+
+    pos = json.find(':', pos + key.length());
+    if (pos == std::string::npos) return "";
+
+    // Skip whitespace
+    pos++;
+    while (pos < json.size() && (json[pos] == ' ' || json[pos] == '\t')) pos++;
+
+    if (pos >= json.size() || json[pos] != '"') return "";
+
+    // Find closing quote, handling escaped quotes
+    size_t start = pos + 1;
+    size_t end   = start;
+    while (end < json.size()) {
+        if (json[end] == '\\') {
+            end += 2; // skip escaped character
+            continue;
+        }
+        if (json[end] == '"') break;
+        end++;
+    }
+    if (end >= json.size()) return "";
+    return json.substr(start, end - start);
+}
+
+// extractJsonInt safely extracts an integer value for a given key.
+// Returns 0 if not found. Does not access out-of-bounds memory.
+static int64_t extractJsonInt(const std::string& json, const std::string& key) {
+    size_t pos = json.find(key);
+    if (pos == std::string::npos) return 0;
+    pos = json.find(':', pos + key.length());
+    if (pos == std::string::npos) return 0;
+
+    size_t i = pos + 1;
+    while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) i++;
+
+    bool negative = false;
+    if (i < json.size() && json[i] == '-') { negative = true; i++; }
+
+    int64_t val = 0;
+    while (i < json.size() && json[i] >= '0' && json[i] <= '9') {
+        val = val * 10 + (json[i] - '0');
+        i++;
+    }
+    return negative ? -val : val;
+}
+
+// extractJsonDouble safely extracts a floating-point value for a given key.
+// Handles integers, decimals, and scientific notation.
+// Returns 0.0 if not found.
+static double extractJsonDouble(const std::string& json, const std::string& key) {
+    size_t pos = json.find(key);
+    if (pos == std::string::npos) return 0.0;
+    pos = json.find(':', pos + key.length());
+    if (pos == std::string::npos) return 0.0;
+
+    size_t i = pos + 1;
+    while (i < json.size() && (json[i] == ' ' || json[i] == '\t')) i++;
+
+    // Find end of number token
+    size_t start = i;
+    while (i < json.size() && (json[i] == '-' || json[i] == '+' ||
+                                json[i] == '.' || json[i] == 'e' || json[i] == 'E' ||
+                                (json[i] >= '0' && json[i] <= '9'))) {
+        i++;
+    }
+    if (i == start) return 0.0;
+
+    try {
+        return std::stod(json.substr(start, i - start));
+    } catch (...) {
+        return 0.0;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Engine implementation
+// ---------------------------------------------------------------------------
+
+Engine::Engine(const EngineConfig& config)
+    : config_(config),
+      isConnected_(false),
+      handshakeComplete_(false),
+      running_(false) {
+
+    network_      = std::make_unique<NetworkClient>();
+    clockSync_    = std::make_unique<ClockSync>();
     jitterBuffer_ = std::make_unique<JitterBuffer>(config.sampleRate, config.channels);
-    decoder_ = std::make_unique<Decoder>(config.sampleRate, config.channels);
+    decoder_      = std::make_unique<Decoder>(config.sampleRate, config.channels);
 
     network_->setTCPMessageCallback([this](const std::string& msg) { handleTCPMessage(msg); });
     network_->setUDPPacketCallback([this](const uint8_t* data, size_t len) { handleUDPPacket(data, len); });
@@ -45,11 +177,16 @@ bool Engine::start() {
         return false;
     }
 
-    std::string joinReq = "{\"type\": \"JOIN_REQUEST\", \"token\": \"" + config_.token + 
-                          "\", \"device_name\": \"" + config_.deviceName + 
-                          "\", \"platform\": \"" + config_.platform + "\"" +
-                          ", \"udp_port\": " + std::to_string(network_->getBoundUDPPort()) + "}";
-    
+    // 3. Send JOIN_REQUEST with all fields properly escaped (F13 fix).
+    // The Go server uses snake_case JSON tags (type, token, device_name, platform, udp_port).
+    std::string joinReq =
+        "{\"type\": \"JOIN_REQUEST\""
+        ", \"token\": \""       + escapeJsonString(config_.token)      + "\""
+        ", \"device_name\": \"" + escapeJsonString(config_.deviceName) + "\""
+        ", \"platform\": \""    + escapeJsonString(config_.platform)   + "\""
+        ", \"udp_port\": "      + std::to_string(network_->getBoundUDPPort()) +
+        "}";
+
     if (!network_->sendTCPMessage(joinReq)) {
         if (onConnectionStatus_) onConnectionStatus_(false, "Failed to send join request");
         stop();
@@ -67,22 +204,27 @@ void Engine::stop() {
     if (maintenanceThread_.joinable()) {
         maintenanceThread_.join();
     }
-    
-    if (isConnected_ && network_) {
+
+    if (network_) {
         network_->disconnectTCP();
         network_->stopUDP();
     }
+    handshakeComplete_ = false;
     isConnected_ = false;
 }
 
 void Engine::readAudio(float* outPcm, size_t numFrames, int64_t playoutTimestampUs) {
-    if (!isConnected_) {
+    // Do not pull audio until the full TCP handshake (clock sync) is complete.
+    // Before that, clockSync_->getOffsetUs() == 0, which would cause all frames
+    // to appear at the wrong server time and get discarded immediately (F11 fix).
+    if (!handshakeComplete_.load(std::memory_order_acquire)) {
         std::fill(outPcm, outPcm + (numFrames * config_.channels), 0.0f);
         return;
     }
 
-    // Pull from the jitter buffer using the server-equivalent playout time
-    size_t written = jitterBuffer_->pull(outPcm, numFrames, playoutTimestampUs, clockSync_->getOffsetUs());
+    size_t written = jitterBuffer_->pull(outPcm, numFrames,
+                                         playoutTimestampUs,
+                                         clockSync_->getOffsetUs());
     LOGD("readAudio: requested=%zu written=%zu offset_us=%lld",
          numFrames, written, (long long)clockSync_->getOffsetUs());
 }
@@ -95,77 +237,119 @@ void Engine::setJitterUpdateCallback(std::function<void(double)> cb) {
     onJitterUpdate_ = std::move(cb);
 }
 
+// ---------------------------------------------------------------------------
+// handleTCPMessage — called from the TCP read thread
+// ---------------------------------------------------------------------------
 void Engine::handleTCPMessage(const std::string& jsonMsg) {
     std::string msgType = extractJsonString(jsonMsg, "\"type\"");
-    
+
     if (msgType == "JOIN_ACCEPT") {
         clientId_ = extractJsonString(jsonMsg, "\"client_id\"");
+        // Note: we set isConnected_ here so the maintenance loop knows we're
+        // authenticated, but we deliberately do NOT set handshakeComplete_ yet.
+        // The audio thread will stay silent until clock sync finishes (F11 fix).
         isConnected_ = true;
+        LOGI("JOIN_ACCEPT: client_id=%s", clientId_.c_str());
+
         if (onConnectionStatus_) onConnectionStatus_(true, "");
-        
-        // Send initial UDP packet so the server learns our UDP port
-        std::vector<uint8_t> dummy(UDP_HEADER_SIZE);
-        dummy[0] = PROTOCOL_VERSION;
-        dummy[1] = static_cast<uint8_t>(PacketType::ClockSyncReply); // innocuous type
-        network_->sendUDPPacket(config_.serverIp, config_.udpPort, dummy);
+
+        // Send a valid dummy UDP packet so the server has our source port confirmed.
+        // (The server already registered our port from the JOIN_REQUEST UDP port field,
+        // but this packet confirms the phone's actual ephemeral outbound source port
+        // in case NAT remapped it — common on some Android hotspot configurations.)
+        UDPPacket dummy;
+        dummy.version     = PROTOCOL_VERSION;
+        dummy.type        = PacketType::ClockSyncReply;
+        dummy.seqNum      = 0;
+        dummy.timestampUs = clockSync_->getLocalTimeUs();
+        dummy.channelMask = ChannelMask::StereoMix;
+        network_->sendUDPPacket(config_.serverIp, config_.udpPort, dummy.serialize());
 
     } else if (msgType == "JOIN_REJECT") {
         std::string reason = extractJsonString(jsonMsg, "\"reason\"");
+        LOGE("JOIN_REJECT: %s", reason.c_str());
         if (onConnectionStatus_) onConnectionStatus_(false, reason);
         stop();
 
     } else if (msgType == "CLOCK_SYNC_PROBE") {
-        int64_t clientRecvTs = clockSync_->getLocalTimeUs();
-        int64_t serverSendTs = extractJsonInt(jsonMsg, "\"server_send_ts\"");
-        
-        int64_t clientSendTs = clockSync_->getLocalTimeUs();
-        
-        std::string reply = "{\"type\": \"CLOCK_SYNC_REPLY\", \"server_send_ts\": " + std::to_string(serverSendTs) + 
-                            ", \"client_recv_ts\": " + std::to_string(clientRecvTs) + 
-                            ", \"client_send_ts\": " + std::to_string(clientSendTs) + "}";
+        // Respond as fast as possible — minimize processing between timestamps.
+        int64_t clientRecvTs  = clockSync_->getLocalTimeUs();
+        int64_t serverSendTs  = extractJsonInt(jsonMsg, "\"server_send_ts\"");
+        int64_t clientSendTs  = clockSync_->getLocalTimeUs();
+
+        std::string reply =
+            "{\"type\": \"CLOCK_SYNC_REPLY\""
+            ", \"server_send_ts\": " + std::to_string(serverSendTs) +
+            ", \"client_recv_ts\": " + std::to_string(clientRecvTs) +
+            ", \"client_send_ts\": " + std::to_string(clientSendTs) +
+            "}";
         network_->sendTCPMessage(reply);
 
     } else if (msgType == "CLOCK_OFFSET") {
         int64_t offset = extractJsonInt(jsonMsg, "\"offset_us\"");
         clockSync_->setOffset(offset);
+        LOGI("CLOCK_OFFSET applied: %lld us", (long long)offset);
+
+        // The server sends CLOCK_OFFSET as the last message of the initial
+        // handshake. Only now is it safe to begin pulling audio (F11 fix).
+        handshakeComplete_.store(true, std::memory_order_release);
 
     } else if (msgType == "SET_GLOBAL_LATENCY") {
-        int64_t targetMs = extractJsonInt(jsonMsg, "\"target_ms\"");
-        jitterBuffer_->setGlobalDelayMs(static_cast<double>(targetMs));
+        // Parse as double — the server sends float64, e.g. "target_ms": 47.5 (F12 fix).
+        double targetMs = extractJsonDouble(jsonMsg, "\"target_ms\"");
+        LOGI("SET_GLOBAL_LATENCY: %.2f ms", targetMs);
+        jitterBuffer_->setGlobalDelayMs(targetMs);
+
+    } else if (msgType == "SET_FRAME_SIZE") {
+        // Future: reconfigure encoder frame size for iOS background fallback.
+        int64_t frameMs = extractJsonInt(jsonMsg, "\"frame_ms\"");
+        LOGI("SET_FRAME_SIZE: %lld ms (acknowledged)", (long long)frameMs);
     }
 }
 
+// ---------------------------------------------------------------------------
+// handleUDPPacket — called from the UDP receiver thread
+// ---------------------------------------------------------------------------
 void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
     UDPPacket pkt;
     if (!UDPPacket::deserialize(data, length, pkt)) return;
 
     if (pkt.type == PacketType::Audio) {
         int64_t localRecvTs = clockSync_->getLocalTimeUs();
-        
+
         std::vector<float> pcm;
         bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pcm);
-        LOGD("UDP Audio pkt: payload_bytes=%zu decode_ok=%d pcm_frames=%zu seq=%u ts=%lld offset=%lld",
-             pkt.payload.size(), (int)decodeOk, decodeOk ? pcm.size() / config_.channels : 0,
-             pkt.seqNum, (long long)pkt.timestampUs, (long long)clockSync_->getOffsetUs());
-        
-        if (decodeOk) {
-            jitterBuffer_->push(pcm.data(), pcm.size() / config_.channels, 
-                                pkt.timestampUs, localRecvTs, clockSync_->getOffsetUs());
+
+        LOGD("UDP Audio: payload=%zu decode=%d pcm_frames=%zu seq=%u ts=%lld",
+             pkt.payload.size(), (int)decodeOk,
+             decodeOk ? pcm.size() / config_.channels : 0,
+             pkt.seqNum, (long long)pkt.timestampUs);
+
+        if (decodeOk && !pcm.empty()) {
+            jitterBuffer_->push(pcm.data(),
+                                pcm.size() / static_cast<size_t>(config_.channels),
+                                pkt.timestampUs,
+                                localRecvTs,
+                                clockSync_->getOffsetUs());
         }
+
     } else if (pkt.type == PacketType::ClockSyncProbe) {
-        // Fast UDP clock sync reply
+        // Fast UDP clock sync path (not used in the current server but handled
+        // defensively for future use).
         UDPPacket reply;
-        reply.version = PROTOCOL_VERSION;
-        reply.type = PacketType::ClockSyncReply;
-        reply.seqNum = 0;
+        reply.version     = PROTOCOL_VERSION;
+        reply.type        = PacketType::ClockSyncReply;
+        reply.seqNum      = 0;
         reply.timestampUs = clockSync_->getLocalTimeUs();
         reply.channelMask = ChannelMask::StereoMix;
-        
         auto rawReply = reply.serialize();
         network_->sendUDPPacket(config_.serverIp, config_.udpPort, rawReply);
     }
 }
 
+// ---------------------------------------------------------------------------
+// maintenanceLoop — runs on its own thread, never the audio thread
+// ---------------------------------------------------------------------------
 void Engine::maintenanceLoop() {
     int loops = 0;
     while (running_) {
@@ -178,58 +362,19 @@ void Engine::maintenanceLoop() {
             network_->sendTCPMessage("{\"type\": \"HEARTBEAT\"}");
         }
 
-        // Every 5 seconds: Jitter Report
+        // Every 5 seconds: Jitter report
         if (loops % 5 == 0) {
             double p95 = jitterBuffer_->getP95JitterMs();
-            network_->sendTCPMessage("{\"type\": \"JITTER_REPORT\", \"p95_ms\": " + std::to_string(p95) + "}");
-            
+
+            // Build JSON with precise float formatting (2 decimal places).
+            std::ostringstream oss;
+            oss << "{\"type\": \"JITTER_REPORT\", \"p95_ms\": "
+                << std::fixed << std::setprecision(2) << p95 << "}";
+            network_->sendTCPMessage(oss.str());
+
             if (onJitterUpdate_) onJitterUpdate_(p95);
         }
     }
-}
-
-// Very basic JSON extractors to avoid large dependencies
-std::string Engine::extractJsonString(const std::string& json, const std::string& key) {
-    size_t pos = json.find(key);
-    if (pos == std::string::npos) return "";
-    
-    // Find the colon after the key
-    pos = json.find(":", pos + key.length());
-    if (pos == std::string::npos) return "";
-    
-    // Find the opening quote of the string value
-    size_t startQuote = json.find("\"", pos + 1);
-    if (startQuote == std::string::npos) return "";
-    
-    // Find the closing quote of the string value
-    size_t endQuote = json.find("\"", startQuote + 1);
-    if (endQuote == std::string::npos) return "";
-    
-    return json.substr(startQuote + 1, endQuote - startQuote - 1);
-}
-
-int64_t Engine::extractJsonInt(const std::string& json, const std::string& key) {
-    size_t pos = json.find(key);
-    if (pos == std::string::npos) return 0;
-    pos = json.find(":", pos + key.length());
-    if (pos == std::string::npos) return 0;
-    
-    size_t i = pos + 1;
-    while (i < json.length() && (json[i] == ' ' || json[i] == '\t')) i++;
-    
-    int64_t val = 0;
-    bool negative = false;
-    if (i < json.length() && json[i] == '-') {
-        negative = true;
-        i++;
-    }
-    
-    while (i < json.length() && json[i] >= '0' && json[i] <= '9') {
-        val = val * 10 + (json[i] - '0');
-        i++;
-    }
-    
-    return negative ? -val : val;
 }
 
 } // namespace soundswarm

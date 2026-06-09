@@ -221,7 +221,7 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 	format := cap.Format()
 	frameSamples := encoders[0].FrameSamples()
 	interleavedBuf := make([]float32, frameSamples*format.Channels)
-	
+
 	var demuxBufs [][]float32
 	if demuxer != nil {
 		demuxBufs = make([][]float32, format.Channels)
@@ -229,6 +229,17 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 			demuxBufs[i] = make([]float32, frameSamples)
 		}
 	}
+
+	// F1 fix: Audio time must be mathematical, not systemic.
+	// If we use ServerTimeNow() inside the loop, GC pauses cause the timestamp
+	// to jump forward artificially. The C++ clients interpret this as network jitter.
+	//
+	// Instead, we anchor the pipeline to a single wall-clock reference taken
+	// BEFORE the loop starts, and advance the timestamp mathematically based
+	// on the number of samples we have actually processed. GC pauses do not
+	// affect this counter.
+	var totalSamplesProcessed int64
+	pipelineStartUs := ssync.ServerTimeNow()
 
 	for {
 		select {
@@ -248,8 +259,11 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 			continue
 		}
 
-		// Get capture timestamp (approximate time when this buffer hit the pipeline)
-		captureTs := ssync.ServerTimeNow()
+		// F1 fix: Compute the capture timestamp from sample count, not wall clock.
+		// This is immune to GC pauses: a pause delays the loop iteration but does
+		// not advance totalSamplesProcessed, so the timestamp remains accurate.
+		captureTs := pipelineStartUs + (totalSamplesProcessed*1_000_000)/int64(format.SampleRate)
+		totalSamplesProcessed += int64(n / format.Channels)
 
 		// 2. Demux and Encode
 		if demuxer != nil {

@@ -104,10 +104,15 @@ bool NetworkClient::sendTCPMessage(const std::string& jsonMsg) {
     if (tcpSocket_ < 0) return false;
 
     uint32_t len = htonl(static_cast<uint32_t>(jsonMsg.length()));
-    
+
     std::vector<uint8_t> buffer(4 + jsonMsg.length());
     std::memcpy(buffer.data(), &len, 4);
     std::memcpy(buffer.data() + 4, jsonMsg.data(), jsonMsg.length());
+
+    // F15 fix: serialize concurrent sends from the maintenance thread and the
+    // TCP callback thread. Without this mutex, partial writes can interleave
+    // and corrupt the length-prefix framing on the Go server.
+    std::lock_guard<std::mutex> lock(tcpSendMu_);
 
 #if defined(__linux__) || defined(__ANDROID__)
     int sent = send(tcpSocket_, reinterpret_cast<const char*>(buffer.data()), buffer.size(), MSG_NOSIGNAL);
@@ -206,7 +211,9 @@ void NetworkClient::setUDPPacketCallback(std::function<void(const uint8_t*, size
 }
 
 void NetworkClient::udpReadLoop() {
-    std::vector<uint8_t> buffer(2048);
+    // F16 fix: buffer must be at least MaxPacketSize (17 header + 4096 payload = 4113).
+    // The old 2048-byte buffer silently truncated large Opus frames.
+    std::vector<uint8_t> buffer(4200);
     while (udpRunning_) {
         struct sockaddr_in srcAddr{};
         socklen_t srcLen = sizeof(srcAddr);

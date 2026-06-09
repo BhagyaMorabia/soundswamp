@@ -14,6 +14,7 @@ import (
 	"io"
 	"log/slog"
 	"net"
+	gosync "sync"
 	"time"
 
 	"github.com/soundswarm/soundswarm/internal/protocol"
@@ -213,6 +214,19 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 
 // clientReadLoop processes incoming TCP messages from a connected client.
 func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *session.Session) {
+	// F23 fix: guard all TCP writes to this conn behind a single mutex.
+	// Two goroutines write to conn concurrently:
+	//   (1) the periodic clock sync goroutine (syncTicker)
+	//   (2) BroadcastToAll() called from HTTP handlers
+	// net.Conn.Write is NOT goroutine-safe. Without this mutex, partial writes
+	// can interleave and corrupt the 4-byte length prefix framing, causing the
+	// C++ client to misread message lengths and crash.
+	var writeMu gosync.Mutex
+	safeWrite := func(msg interface{}) error {
+		writeMu.Lock()
+		defer writeMu.Unlock()
+		return sendTCPMessage(conn, msg)
+	}
 	// Start periodic clock sync in background
 	syncTicker := time.NewTicker(ssync.PeriodicSyncInterval)
 	defer syncTicker.Stop()
@@ -231,6 +245,9 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 			}
 		}
 	}()
+
+	// Store safeWrite on the client so BroadcastToAll can use the same mutex.
+	client.SetWriteFunc(safeWrite)
 
 	defer func() {
 		syncTicker.Stop()
@@ -306,6 +323,8 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 }
 
 // BroadcastToAll sends a TCP message to all connected clients.
+// Uses each client's mutex-protected Send() method to avoid concurrent write
+// races between this goroutine and the per-client periodic sync goroutine (F23 fix).
 func (s *TCPServer) BroadcastToAll(msg interface{}) {
 	sess := s.config.SessionManager.GetSession()
 	if sess == nil {
@@ -313,13 +332,11 @@ func (s *TCPServer) BroadcastToAll(msg interface{}) {
 	}
 
 	sess.ForEachClient(func(client *session.Client) {
-		if client.TCPConn != nil {
-			if err := sendTCPMessage(client.TCPConn, msg); err != nil {
-				s.logger.Warn("broadcast failed",
-					"client", client.ID,
-					"error", err,
-				)
-			}
+		if err := client.Send(msg); err != nil {
+			s.logger.Warn("broadcast failed",
+				"client", client.ID,
+				"error", err,
+			)
 		}
 	})
 }

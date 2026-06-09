@@ -1,0 +1,14 @@
+# Target labels
+ opus-populate
+# Source files and their labels
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/opus-populate
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/opus-populate.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/CMakeFiles/opus-populate-complete.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-build.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-configure.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-download.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-install.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-mkdir.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-patch.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-test.rule
+C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/_deps/opus-subbuild/opus-populate-prefix/src/opus-populate-stamp/opus-populate-update.rule

@@ -2,6 +2,8 @@
 
 #include <oboe/Oboe.h>
 #include <memory>
+#include <thread>
+#include <chrono>
 #include "engine.h"
 
 namespace soundswarm {

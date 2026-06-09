@@ -1,0 +1,530 @@
+The target system is: Android - 1 - x86_64
+The host system is: Windows - 10.0.26220 - AMD64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;
+Id flags: -c;--target=x86_64-none-linux-android24 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "CMakeCCompilerId.o"
+
+The C compiler identification is Clang, found in "C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdC/CMakeCCompilerId.o"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe 
+Build flags: -g;-DANDROID;-fdata-sections;-ffunction-sections;-funwind-tables;-fstack-protector-strong;-no-canonical-prefixes;-D_FORTIFY_SOURCE=2;-Wformat;-Werror=format-security;;-std=c++17
+Id flags: -c;--target=x86_64-none-linux-android24 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "CMakeCXXCompilerId.o"
+
+The CXX compiler identification is Clang, found in "C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/3.22.1-g37088a8-dirty/CompilerIdCXX/CMakeCXXCompilerId.o"
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_44a24 && [1/2] Building C object CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o
+Android (8490178, based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)
+Target: x86_64-none-linux-android24
+Thread model: posix
+InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin
+Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0, version 
+ (in-process)
+ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe" -cc1 -triple x86_64-none-linux-android24 -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -target-feature +sse4.2 -target-feature +popcnt -target-feature +cx16 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -resource-dir C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6 -dependency-file "CMakeFiles\\cmTC_44a24.dir\\CMakeCCompilerABI.c.o.d" -MT CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include -Wformat -fdebug-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o -x c C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c
+clang -cc1 version 14.0.6 based upon LLVM 14.0.6git default target x86_64-w64-windows-gnu
+ignoring nonexistent directory "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking C executable cmTC_44a24
+Android (8490178, based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)
+Target: x86_64-none-linux-android24
+Thread model: posix
+InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin
+Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0, version 
+ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld" --sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -pie --warn-shared-textrel -z now -z relro --hash-style=gnu --enable-new-dtags --eh-frame-hdr -m elf_x86_64 -dynamic-linker /system/bin/linker64 -o cmTC_44a24 C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl -lc C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o
+
+
+
+Parsed C implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  implicit include dirs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_44a24 && [1/2] Building C object CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o]
+  ignore line: [Android (8490178  based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)]
+  ignore line: [Target: x86_64-none-linux-android24]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin]
+  ignore line: [Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0  version ]
+  ignore line: [ (in-process)]
+  ignore line: [ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang.exe" -cc1 -triple x86_64-none-linux-android24 -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCCompilerABI.c -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -target-feature +sse4.2 -target-feature +popcnt -target-feature +cx16 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -resource-dir C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6 -dependency-file "CMakeFiles\\cmTC_44a24.dir\\CMakeCCompilerABI.c.o.d" -MT CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include -Wformat -fdebug-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o -x c C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCCompilerABI.c]
+  ignore line: [clang -cc1 version 14.0.6 based upon LLVM 14.0.6git default target x86_64-w64-windows-gnu]
+  ignore line: [ignoring nonexistent directory "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking C executable cmTC_44a24]
+  ignore line: [Android (8490178  based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)]
+  ignore line: [Target: x86_64-none-linux-android24]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin]
+  ignore line: [Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0  version ]
+  link line: [ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld" --sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -pie --warn-shared-textrel -z now -z relro --hash-style=gnu --enable-new-dtags --eh-frame-hdr -m elf_x86_64 -dynamic-linker /system/bin/linker64 -o cmTC_44a24 C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl -lc C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld] ==> ignore
+    arg [--sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [--warn-shared-textrel] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker64] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_44a24] ==> ignore
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o] ==> obj [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+    arg [--build-id=sha1] ==> ignore
+    arg [--no-rosegment] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [CMakeFiles/cmTC_44a24.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a] ==> lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a] ==> lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o] ==> obj [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+  remove lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+  remove lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+  implicit libs: [-l:libunwind.a;dl;c;-l:libunwind.a;dl]
+  implicit objs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+  implicit dirs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_e3b2a && [1/2] Building CXX object CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o
+Android (8490178, based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)
+Target: x86_64-none-linux-android24
+Thread model: posix
+InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin
+Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0, version 
+ (in-process)
+ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe" -cc1 -triple x86_64-none-linux-android24 -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -target-feature +sse4.2 -target-feature +popcnt -target-feature +cx16 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -resource-dir C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6 -dependency-file "CMakeFiles\\cmTC_e3b2a.dir\\CMakeCXXCompilerABI.cpp.o.d" -MT CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1 -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include -Wformat -std=c++17 -fdeprecated-macro -fdebug-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -x c++ C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp
+clang -cc1 version 14.0.6 based upon LLVM 14.0.6git default target x86_64-w64-windows-gnu
+ignoring nonexistent directory "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include"
+#include "..." search starts here:
+#include <...> search starts here:
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android
+ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include
+End of search list.
+[2/2] Linking CXX executable cmTC_e3b2a
+Android (8490178, based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)
+Target: x86_64-none-linux-android24
+Thread model: posix
+InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin
+Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0, version 
+ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld" --sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -pie --warn-shared-textrel -z now -z relro --hash-style=gnu --enable-new-dtags --eh-frame-hdr -m elf_x86_64 -dynamic-linker /system/bin/linker64 -o cmTC_e3b2a C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl -lc C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o
+
+
+
+Parsed CXX implicit include dir info from above output: rv=done
+  found start of include info
+  found start of implicit include info
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+    add: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  end of search list found
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+  collapse include dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  implicit include dirs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld\.lld\.exe|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_e3b2a && [1/2] Building CXX object CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [Android (8490178  based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)]
+  ignore line: [Target: x86_64-none-linux-android24]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin]
+  ignore line: [Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0  version ]
+  ignore line: [ (in-process)]
+  ignore line: [ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/clang++.exe" -cc1 -triple x86_64-none-linux-android24 -emit-obj -mrelax-all --mrelax-relocations -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -pic-is-pie -mframe-pointer=all -ffp-contract=on -fno-rounding-math -mconstructor-aliases -funwind-tables=2 -target-cpu x86-64 -target-feature +sse4.2 -target-feature +popcnt -target-feature +cx16 -tune-cpu generic -mllvm -treat-scalable-fixed-error-as-warning -debug-info-kind=constructor -dwarf-version=4 -debugger-tuning=gdb -v -ffunction-sections -fdata-sections -fcoverage-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -resource-dir C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6 -dependency-file "CMakeFiles\\cmTC_e3b2a.dir\\CMakeCXXCompilerABI.cpp.o.d" -MT CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -D ANDROID -D _FORTIFY_SOURCE=2 -isysroot C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1 -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include -internal-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include -internal-externc-isystem C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include -Wformat -std=c++17 -fdeprecated-macro -fdebug-compilation-dir=C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp -ferror-limit 19 -stack-protector 2 -fgnuc-version=4.2.1 -fcxx-exceptions -fexceptions -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -x c++ C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [clang -cc1 version 14.0.6 based upon LLVM 14.0.6git default target x86_64-w64-windows-gnu]
+  ignore line: [ignoring nonexistent directory "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/include"]
+  ignore line: [#include "..." search starts here:]
+  ignore line: [#include <...> search starts here:]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/c++/v1]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/include]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/local/include]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include/x86_64-linux-android]
+  ignore line: [ C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/include]
+  ignore line: [End of search list.]
+  ignore line: [[2/2] Linking CXX executable cmTC_e3b2a]
+  ignore line: [Android (8490178  based on r450784d) clang version 14.0.6 (https://android.googlesource.com/toolchain/llvm-project 4c603efb0cca074e9238af8b4106c30add4418f6)]
+  ignore line: [Target: x86_64-none-linux-android24]
+  ignore line: [Thread model: posix]
+  ignore line: [InstalledDir: C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin]
+  ignore line: [Found CUDA installation: C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v13.0  version ]
+  link line: [ "C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld" --sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot -pie --warn-shared-textrel -z now -z relro --hash-style=gnu --enable-new-dtags --eh-frame-hdr -m elf_x86_64 -dynamic-linker /system/bin/linker64 -o cmTC_e3b2a C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24 -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android -LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib --build-id=sha1 --no-rosegment --fatal-warnings --gc-sections --no-undefined --gc-sections CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lm C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl -lc C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a -l:libunwind.a -ldl C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/bin/ld] ==> ignore
+    arg [--sysroot=C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot] ==> ignore
+    arg [-pie] ==> ignore
+    arg [--warn-shared-textrel] ==> ignore
+    arg [-znow] ==> ignore
+    arg [-zrelro] ==> ignore
+    arg [--hash-style=gnu] ==> ignore
+    arg [--enable-new-dtags] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-m] ==> ignore
+    arg [elf_x86_64] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/system/bin/linker64] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTC_e3b2a] ==> ignore
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o] ==> obj [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android]
+    arg [-LC:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib] ==> dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+    arg [--build-id=sha1] ==> ignore
+    arg [--no-rosegment] ==> ignore
+    arg [--fatal-warnings] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [--no-undefined] ==> ignore
+    arg [--gc-sections] ==> ignore
+    arg [CMakeFiles/cmTC_e3b2a.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lc++] ==> lib [c++]
+    arg [-lm] ==> lib [m]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a] ==> lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [-lc] ==> lib [c]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a] ==> lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+    arg [-l:libunwind.a] ==> lib [-l:libunwind.a]
+    arg [-ldl] ==> lib [dl]
+    arg [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o] ==> obj [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+  remove lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+  remove lib [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/libclang_rt.builtins-x86_64-android.a]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android]
+  collapse library dir [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib] ==> [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+  implicit libs: [c++;m;-l:libunwind.a;dl;c;-l:libunwind.a;dl]
+  implicit objs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtbegin_dynamic.o;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24/crtend_android.o]
+  implicit dirs: [C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/lib64/clang/14.0.6/lib/linux/x86_64;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android/24;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib/x86_64-linux-android;C:/Users/prsco/AppData/Local/Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/windows-x86_64/sysroot/usr/lib]
+  implicit fwks: []
+
+
+Determining if the include file alloca.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_9a1db && [1/2] Building C object CMakeFiles/cmTC_9a1db.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_9a1db
+
+
+
+Determining if the alloca exist passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_88a51 && [1/2] Building C object CMakeFiles/cmTC_88a51.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_88a51
+
+
+File C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <alloca.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef alloca
+  return ((int*)(&alloca))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the function floor exists in the m passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_d67fb && [1/2] Building C object CMakeFiles/cmTC_d67fb.dir/CheckFunctionExists.c.o
+C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:7:3: warning: incompatible redeclaration of library function 'floor' [-Wincompatible-library-redeclaration]
+  CHECK_FUNCTION_EXISTS(void);
+  ^
+<command line>:3:31: note: expanded from here
+#define CHECK_FUNCTION_EXISTS floor
+                              ^
+C:/Users/prsco/AppData/Local/Android/Sdk/cmake/3.22.1/share/cmake-3.22/Modules/CheckFunctionExists.c:7:3: note: 'floor' is a builtin with type 'double (double)'
+<command line>:3:31: note: expanded from here
+#define CHECK_FUNCTION_EXISTS floor
+                              ^
+1 warning generated.
+[2/2] Linking C executable cmTC_d67fb
+
+
+
+Determining if the lrintf exist passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_c7758 && [1/2] Building C object CMakeFiles/cmTC_c7758.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_c7758
+
+
+File C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef lrintf
+  return ((int*)(&lrintf))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the lrint exist passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_5f28e && [1/2] Building C object CMakeFiles/cmTC_5f28e.dir/CheckSymbolExists.c.o
+[2/2] Linking C executable cmTC_5f28e
+
+
+File C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp/CheckSymbolExists.c:
+/* */
+#include <math.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef lrint
+  return ((int*)(&lrint))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+Determining if the include file cpuid.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_3ad67 && [1/2] Building C object CMakeFiles/cmTC_3ad67.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_3ad67
+
+
+
+Determining if the include file xmmintrin.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_fe500 && [1/2] Building C object CMakeFiles/cmTC_fe500.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_fe500
+
+
+
+Performing C SOURCE FILE Test SSE1_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_326df && [1/2] Building C object CMakeFiles/cmTC_326df.dir/src.c.o
+[2/2] Linking C executable cmTC_326df
+
+
+Source file was:
+int main(void) { return 0; }
+Determining if the include file emmintrin.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_89153 && [1/2] Building C object CMakeFiles/cmTC_89153.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_89153
+
+
+
+Performing C SOURCE FILE Test SSE2_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_ec7e0 && [1/2] Building C object CMakeFiles/cmTC_ec7e0.dir/src.c.o
+[2/2] Linking C executable cmTC_ec7e0
+
+
+Source file was:
+int main(void) { return 0; }
+Determining if the include file smmintrin.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_685fc && [1/2] Building C object CMakeFiles/cmTC_685fc.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_685fc
+
+
+
+Performing C SOURCE FILE Test SSE4_1_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_8f29b && [1/2] Building C object CMakeFiles/cmTC_8f29b.dir/src.c.o
+[2/2] Linking C executable cmTC_8f29b
+
+
+Source file was:
+int main(void) { return 0; }
+Determining if the include file immintrin.h exists passed with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_04947 && [1/2] Building C object CMakeFiles/cmTC_04947.dir/CheckIncludeFile.c.o
+[2/2] Linking C executable cmTC_04947
+
+
+
+Performing C SOURCE FILE Test AVX_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_f3b38 && [1/2] Building C object CMakeFiles/cmTC_f3b38.dir/src.c.o
+[2/2] Linking C executable cmTC_f3b38
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test FAST_MATH_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_bd146 && [1/2] Building C object CMakeFiles/cmTC_bd146.dir/src.c.o
+[2/2] Linking C executable cmTC_bd146
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test STACK_PROTECTOR_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_5952b && [1/2] Building C object CMakeFiles/cmTC_5952b.dir/src.c.o
+[2/2] Linking C executable cmTC_5952b
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test HIDDEN_VISIBILITY_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_360f6 && [1/2] Building C object CMakeFiles/cmTC_360f6.dir/src.c.o
+[2/2] Linking C executable cmTC_360f6
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wall_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_5fd9c && [1/2] Building C object CMakeFiles/cmTC_5fd9c.dir/src.c.o
+[2/2] Linking C executable cmTC_5fd9c
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test W_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_1e352 && [1/2] Building C object CMakeFiles/cmTC_1e352.dir/src.c.o
+[2/2] Linking C executable cmTC_1e352
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wstrictprototypes_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_6639c && [1/2] Building C object CMakeFiles/cmTC_6639c.dir/src.c.o
+[2/2] Linking C executable cmTC_6639c
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wextra_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_aee7e && [1/2] Building C object CMakeFiles/cmTC_aee7e.dir/src.c.o
+[2/2] Linking C executable cmTC_aee7e
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wcastalign_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_11dda && [1/2] Building C object CMakeFiles/cmTC_11dda.dir/src.c.o
+[2/2] Linking C executable cmTC_11dda
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wnestedexterns_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_dd855 && [1/2] Building C object CMakeFiles/cmTC_dd855.dir/src.c.o
+[2/2] Linking C executable cmTC_dd855
+
+
+Source file was:
+int main(void) { return 0; }
+Performing C SOURCE FILE Test Wshadow_SUPPORTED succeeded with the following output:
+Change Dir: C:/Users/prsco/Desktop/bhagya/audio/client/android/app/.cxx/Debug/3p3fu3l5/x86_64/CMakeFiles/CMakeTmp
+
+Run Build Command(s):C:\Users\prsco\AppData\Local\Android\Sdk\cmake\3.22.1\bin\ninja.exe cmTC_2656b && [1/2] Building C object CMakeFiles/cmTC_2656b.dir/src.c.o
+[2/2] Linking C executable cmTC_2656b
+
+
+Source file was:
+int main(void) { return 0; }

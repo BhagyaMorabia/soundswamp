@@ -60,9 +60,12 @@ type Client struct {
 	JoinedAt      time.Time
 	LastHeartbeat time.Time
 	P95Jitter     float64
-	FrameSize     int // current Opus frame size in ms (10 or 40)
+	FrameSize     int    // current Opus frame size in ms (10 or 40)
 	AppState      string // "foreground" or "background"
-	mu            gosync.RWMutex
+	// WriteFunc is the mutex-protected TCP write function for this connection.
+	// Set by clientReadLoop after the connection is established.
+	WriteFunc func(msg interface{}) error
+	mu        gosync.RWMutex
 }
 
 // UpdateHeartbeat records the current time as the last heartbeat.
@@ -105,6 +108,25 @@ func (c *Client) SetAppState(state string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.AppState = state
+}
+
+// SetWriteFunc stores the mutex-protected write function for this client's conn.
+func (c *Client) SetWriteFunc(fn func(msg interface{}) error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.WriteFunc = fn
+}
+
+// Send sends a message to this client using the safe write function.
+// Returns an error if WriteFunc is not yet set (connection not ready).
+func (c *Client) Send(msg interface{}) error {
+	c.mu.RLock()
+	fn := c.WriteFunc
+	c.mu.RUnlock()
+	if fn == nil {
+		return nil
+	}
+	return fn(msg)
 }
 
 // Info returns a snapshot of the client's state for API responses.

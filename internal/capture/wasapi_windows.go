@@ -419,10 +419,27 @@ func (w *WASAPICapture) measureLoopbackLatency() {
 	}
 }
 
-// isAlreadyInitialized checks if the HRESULT indicates COM was already initialized.
+// isAlreadyInitialized checks if the HRESULT from CoInitializeEx indicates that
+// COM was already initialized in a compatible mode (not a real failure).
+//
+// F21 fix: the previous implementation returned true for ANY non-nil error,
+// which silently swallowed real failures like E_OUTOFMEMORY (0x8007000E).
+// Only two HRESULTs are safe to ignore:
+//   - S_FALSE (0x00000001):        already initialized in this threading model
+//   - RPC_E_CHANGED_MODE (0x80010106): initialized in a different threading model
+//     (MTA vs STA) — acceptable for our loopback use case.
 func isAlreadyInitialized(err error) bool {
-	// S_FALSE (0x00000001) or RPC_E_CHANGED_MODE (0x80010106)
-	return err != nil
+	if err == nil {
+		return false
+	}
+	// Convert the syscall error to its numeric HRESULT code.
+	type hresulter interface{ Error() string }
+	if e, ok := err.(syscall.Errno); ok {
+		code := uint32(e)
+		return code == 0x00000001 || // S_FALSE
+			code == 0x80010106      // RPC_E_CHANGED_MODE
+	}
+	return false
 }
 
 // -----------------------------------------------------------------------

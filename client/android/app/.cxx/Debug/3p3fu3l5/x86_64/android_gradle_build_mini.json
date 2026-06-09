@@ -1,0 +1,36 @@
+{
+  "buildFiles": [
+    "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\.cxx\\Debug\\3p3fu3l5\\x86_64\\_deps\\opus-src\\CMakeLists.txt",
+    "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\src\\main\\cpp\\CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "C:\\Users\\prsco\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+      "-C",
+      "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\.cxx\\Debug\\3p3fu3l5\\x86_64",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "C:\\Users\\prsco\\AppData\\Local\\Android\\Sdk\\cmake\\3.22.1\\bin\\ninja.exe",
+    "-C",
+    "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\.cxx\\Debug\\3p3fu3l5\\x86_64",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "opus::@36a7f2979fa5c8bed281": {
+      "artifactName": "opus",
+      "abi": "x86_64",
+      "output": "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\.cxx\\Debug\\3p3fu3l5\\x86_64\\_deps\\opus-build\\libopus.a",
+      "runtimeFiles": []
+    },
+    "soundswarm_jni::@6890427a1f51a3e7e1df": {
+      "artifactName": "soundswarm_jni",
+      "abi": "x86_64",
+      "output": "C:\\Users\\prsco\\Desktop\\bhagya\\audio\\client\\android\\app\\build\\intermediates\\cxx\\Debug\\3p3fu3l5\\obj\\x86_64\\libsoundswarm_jni.so",
+      "runtimeFiles": [
+        "C:\\Users\\prsco\\.gradle\\caches\\transforms-3\\b0fcb5936d3f7a3798ad9bc6017cb689\\transformed\\jetified-oboe-1.8.0\\prefab\\modules\\oboe\\libs\\android.x86_64\\liboboe.so"
+      ]
+    }
+  }
+}

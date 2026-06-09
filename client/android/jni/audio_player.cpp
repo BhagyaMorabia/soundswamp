@@ -33,8 +33,11 @@ bool AudioPlayer::start() {
         return false;
     }
 
-    // Set buffer size to exactly 2 bursts to minimize latency while preventing underruns
-    stream_->setBufferSizeInFrames(stream_->getFramesPerBurst() * 2);
+    // F5 fix: 4 bursts (≈10–15ms) instead of 2 (≈4ms).
+    // The jitter buffer provides mathematical synchronization so a larger hardware
+    // buffer does not affect global latency — it only prevents underruns from
+    // Android background CPU spikes (email sync, GC, etc.).
+    stream_->setBufferSizeInFrames(stream_->getFramesPerBurst() * 4);
 
     result = stream_->requestStart();
     if (result != oboe::Result::OK) {
@@ -90,8 +93,26 @@ oboe::DataCallbackResult AudioPlayer::onAudioReady(oboe::AudioStream *oboeStream
 }
 
 void AudioPlayer::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result error) {
-    LOGE("Oboe stream closed due to error: %s", oboe::convertToText(error));
-    // In a production app, we would attempt to restart the stream here.
+    LOGE("Oboe stream closed due to error: %s — attempting restart",
+         oboe::convertToText(error));
+
+    // F17 fix: Restart the stream after device changes (headphone plug/unplug,
+    // Bluetooth connect/disconnect, etc.). Without this, audio stops permanently.
+    //
+    // Oboe recommends restarting from a separate thread to avoid deadlock inside
+    // the error callback. We use a detached thread for simplicity; a production
+    // app would use a more robust restart manager.
+    std::thread restartThread([this]() {
+        // Brief pause to let the OS settle after a device change.
+        std::this_thread::sleep_for(std::chrono::milliseconds(200));
+        stop();
+        if (start()) {
+            LOGI("Oboe stream restarted successfully after error.");
+        } else {
+            LOGE("Oboe stream restart failed.");
+        }
+    });
+    restartThread.detach();
 }
 
 } // namespace android

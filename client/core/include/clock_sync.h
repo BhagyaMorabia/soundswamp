@@ -1,34 +1,39 @@
 #pragma once
 
 #include <cstdint>
-#include <mutex>
+#include <atomic>
 #include <chrono>
 
 namespace soundswarm {
 
+// ClockSync maintains the offset between the phone's local monotonic clock
+// and the server's clock. All reads and writes are lock-free using atomics,
+// making it safe to call getOffsetUs() from the hardware audio thread without
+// any risk of priority inversion or blocking.
 class ClockSync {
 public:
     ClockSync();
 
-    // Returns the current local monotonic time in microseconds.
-    // This is used for generating ClientRecvTs and ClientSendTs in sync replies,
-    // and for calculating transit times locally.
+    // Returns the current local monotonic time in microseconds since boot.
+    // Uses std::chrono::steady_clock, which maps to CLOCK_MONOTONIC on Android/Linux.
+    // This matches the epoch used by Oboe's getTimestamp(CLOCK_MONOTONIC).
     static int64_t getLocalTimeUs();
 
-    // Sets the clock offset received from the server (either initial or correction).
-    // offsetUs = ServerTime - LocalTime
+    // Sets the clock offset received from the server (initial handshake or correction).
+    // offsetUs = ServerTime - LocalTime.
+    // Uses memory_order_release so the network thread's write is visible to the
+    // audio thread immediately without a mutex.
     void setOffset(int64_t offsetUs);
 
     // Returns the current estimated server time in microseconds.
-    // Equivalent to getLocalTimeUs() + getOffsetUs().
     int64_t getServerTimeUs() const;
 
     // Returns the current applied clock offset.
+    // Uses memory_order_acquire — safe to call from the audio thread.
     int64_t getOffsetUs() const;
 
 private:
-    int64_t offsetUs_;
-    mutable std::mutex mutex_;
+    std::atomic<int64_t> offsetUs_;
 };
 
 } // namespace soundswarm
