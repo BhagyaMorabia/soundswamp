@@ -48,14 +48,13 @@ bool Decoder::decode(const uint8_t* opusData, size_t length, std::vector<float>&
 
     if (decodedSamples < 0) {
         // Fallback: The Go server might be running without CGO (opus_cgo tag)
-        // In this mode, it sends raw 16-bit little-endian PCM instead of Opus
-        int expectedSamples = (sampleRate_ / 100) * channels_; // 10ms frame
-        int expectedBytes = expectedSamples * 2;
-        
-        if (length == static_cast<size_t>(expectedBytes)) {
-            outPcm.resize(expectedSamples);
+        // In this mode, it sends raw 16-bit little-endian PCM instead of Opus.
+        // We accept any length that is a multiple of bytes-per-frame.
+        if (length > 0 && length % (channels_ * 2) == 0) {
+            int pcmSamples = length / 2; // total float samples across all channels
+            outPcm.resize(pcmSamples);
             const int16_t* pcm16 = reinterpret_cast<const int16_t*>(opusData);
-            for (int i = 0; i < expectedSamples; ++i) {
+            for (int i = 0; i < pcmSamples; ++i) {
                 outPcm[i] = static_cast<float>(pcm16[i]) / 32768.0f;
             }
             return true;
