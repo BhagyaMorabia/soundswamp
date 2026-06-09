@@ -91,9 +91,13 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-        } catch (e: Exception) {
+        } catch (e: org.json.JSONException) {
             Log.e("MainActivity", "Invalid QR code format", e)
             Toast.makeText(this, "Invalid QR code", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Log.e("MainActivity", "Connection exception", e)
+            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            tvStatus.text = "Not Connected"
         }
     }
 

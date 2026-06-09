@@ -3,6 +3,8 @@
     package="com.soundswarm.client">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     
     <!-- Required for Oboe depending on setup, but we only do playback right now -->
