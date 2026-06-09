@@ -16,11 +16,16 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvStatus: TextView
     private lateinit var btnScan: Button
     private lateinit var btnDisconnect: Button
-    private val client = SoundSwarmClient()
+
+    // SoundSwarmClient now requires Context so it can access ConnectivityManager
+    // for the Wi-Fi network binding (F6 fix).
+    private lateinit var client: SoundSwarmClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        client = SoundSwarmClient(this)
 
         tvStatus = findViewById(R.id.tvStatus)
         btnScan = findViewById(R.id.btnScan)
@@ -58,36 +63,33 @@ class MainActivity : AppCompatActivity() {
     private fun handleQRCode(jsonStr: String) {
         try {
             val obj = JSONObject(jsonStr)
-            val ip = obj.getString("ip")
-            val tcpPort = obj.getInt("tcp_port")
-            val udpPort = obj.getInt("udp_port")
-            val token = obj.getString("token")
+            val ip       = obj.getString("ip")
+            val tcpPort  = obj.getInt("tcp_port")
+            val udpPort  = obj.getInt("udp_port")
+            val token    = obj.getString("token")
             val deviceName = android.os.Build.MODEL
 
-            tvStatus.text = "Connecting..."
+            tvStatus.text = "Binding Wi-Fi network..."
             Toast.makeText(this, "Connecting to $ip...", Toast.LENGTH_SHORT).show()
-            
-            // Networking MUST be done on a background thread in Android,
-            // otherwise it throws NetworkOnMainThreadException or triggers an ANR crash.
-            Thread {
-                try {
-                    val success = client.connect(ip, tcpPort, udpPort, token, deviceName)
-                    runOnUiThread {
-                        if (success) {
-                            updateUI(true)
-                        } else {
-                            Toast.makeText(this@MainActivity, "Failed to connect to server", Toast.LENGTH_LONG).show()
-                            tvStatus.text = "Not Connected"
-                        }
-                    }
-                } catch (e: Exception) {
-                    runOnUiThread {
-                        Log.e("MainActivity", "Connection error", e)
-                        Toast.makeText(this@MainActivity, "Connection error: ${e.message}", Toast.LENGTH_LONG).show()
+
+            // SoundSwarmClient.connect() now:
+            //   1. Requests the Wi-Fi network from ConnectivityManager
+            //   2. Calls bindProcessToNetwork() so C++ sockets use hotspot Wi-Fi
+            //   3. Boots the native engine
+            //   4. Calls onResult on the calling thread (NOT the main thread)
+            //
+            // Result is dispatched back to the UI thread via runOnUiThread.
+            client.connect(ip, tcpPort, udpPort, token, deviceName) { success, errorMsg ->
+                runOnUiThread {
+                    if (success) {
+                        updateUI(true)
+                    } else {
+                        val msg = if (errorMsg.isNotEmpty()) errorMsg else "Failed to connect"
+                        Toast.makeText(this@MainActivity, msg, Toast.LENGTH_LONG).show()
                         tvStatus.text = "Not Connected"
                     }
                 }
-            }.start()
+            }
 
         } catch (e: Exception) {
             Log.e("MainActivity", "Invalid QR code format", e)
