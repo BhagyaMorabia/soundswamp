@@ -117,10 +117,14 @@ class MainActivity : AppCompatActivity() {
             
             // Start KeepAliveService to allow background execution
             val serviceIntent = Intent(this, KeepAliveService::class.java)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                startForegroundService(serviceIntent)
-            } else {
-                startService(serviceIntent)
+            try {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    startForegroundService(serviceIntent)
+                } else {
+                    startService(serviceIntent)
+                }
+            } catch (e: Exception) {
+                Log.e("MainActivity", "Failed to start foreground service: ${e.message}")
             }
         } else {
             tvStatus.text = "Not Connected"
