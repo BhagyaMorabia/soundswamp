@@ -17,7 +17,7 @@
 
 namespace soundswarm {
 
-NetworkClient::NetworkClient() 
+BsdNetworkClient::BsdNetworkClient() 
     : tcpSocket_(-1), udpSocket_(-1), boundUdpPort_(0), tcpRunning_(false), udpRunning_(false) {
 #ifdef _WIN32
     WSADATA wsaData;
@@ -25,7 +25,7 @@ NetworkClient::NetworkClient()
 #endif
 }
 
-NetworkClient::~NetworkClient() {
+BsdNetworkClient::~BsdNetworkClient() {
     disconnectTCP();
     stopUDP();
 #ifdef _WIN32
@@ -33,7 +33,7 @@ NetworkClient::~NetworkClient() {
 #endif
 }
 
-bool NetworkClient::connectTCP(const std::string& ip, int port) {
+bool BsdNetworkClient::connectTCP(const std::string& ip, int port) {
     tcpSocket_ = socket(AF_INET, SOCK_STREAM, 0);
     if (tcpSocket_ < 0) return false;
 
@@ -73,7 +73,7 @@ bool NetworkClient::connectTCP(const std::string& ip, int port) {
             fcntl(tcpSocket_, F_SETFL, flags);
 #endif
             tcpRunning_ = true;
-            tcpThread_ = std::thread(&NetworkClient::tcpReadLoop, this);
+            tcpThread_ = std::thread(&BsdNetworkClient::tcpReadLoop, this);
             return true;
         }
     }
@@ -84,7 +84,7 @@ bool NetworkClient::connectTCP(const std::string& ip, int port) {
     return false;
 }
 
-void NetworkClient::disconnectTCP() {
+void BsdNetworkClient::disconnectTCP() {
     tcpRunning_ = false;
     if (tcpSocket_ >= 0) {
 #ifdef _WIN32
@@ -100,7 +100,7 @@ void NetworkClient::disconnectTCP() {
     }
 }
 
-bool NetworkClient::sendTCPMessage(const std::string& jsonMsg) {
+bool BsdNetworkClient::sendTCPMessage(const std::string& jsonMsg) {
     if (tcpSocket_ < 0) return false;
 
     uint32_t len = htonl(static_cast<uint32_t>(jsonMsg.length()));
@@ -122,11 +122,11 @@ bool NetworkClient::sendTCPMessage(const std::string& jsonMsg) {
     return sent == static_cast<int>(buffer.size());
 }
 
-void NetworkClient::setTCPMessageCallback(std::function<void(const std::string&)> cb) {
+void BsdNetworkClient::setTCPMessageCallback(std::function<void(const std::string&)> cb) {
     tcpCb_ = std::move(cb);
 }
 
-void NetworkClient::tcpReadLoop() {
+void BsdNetworkClient::tcpReadLoop() {
     while (tcpRunning_) {
         uint32_t lenNetwork;
         int bytesRead = recv(tcpSocket_, reinterpret_cast<char*>(&lenNetwork), 4, 0);
@@ -153,7 +153,7 @@ void NetworkClient::tcpReadLoop() {
     tcpRunning_ = false;
 }
 
-bool NetworkClient::startUDP(int localPort) {
+bool BsdNetworkClient::startUDP(int localPort) {
     udpSocket_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (udpSocket_ < 0) return false;
 
@@ -178,11 +178,11 @@ bool NetworkClient::startUDP(int localPort) {
     boundUdpPort_ = ntohs(boundAddr.sin_port);
 
     udpRunning_ = true;
-    udpThread_ = std::thread(&NetworkClient::udpReadLoop, this);
+    udpThread_ = std::thread(&BsdNetworkClient::udpReadLoop, this);
     return true;
 }
 
-void NetworkClient::stopUDP() {
+void BsdNetworkClient::stopUDP() {
     udpRunning_ = false;
     if (udpSocket_ >= 0) {
         closesocket(udpSocket_);
@@ -193,7 +193,7 @@ void NetworkClient::stopUDP() {
     }
 }
 
-bool NetworkClient::sendUDPPacket(const std::string& ip, int port, const std::vector<uint8_t>& data) {
+bool BsdNetworkClient::sendUDPPacket(const std::string& ip, int port, const std::vector<uint8_t>& data) {
     if (udpSocket_ < 0) return false;
 
     struct sockaddr_in destAddr{};
@@ -206,11 +206,11 @@ bool NetworkClient::sendUDPPacket(const std::string& ip, int port, const std::ve
     return sent == static_cast<int>(data.size());
 }
 
-void NetworkClient::setUDPPacketCallback(std::function<void(const uint8_t*, size_t)> cb) {
+void BsdNetworkClient::setUDPPacketCallback(std::function<void(const uint8_t*, size_t)> cb) {
     udpCb_ = std::move(cb);
 }
 
-void NetworkClient::udpReadLoop() {
+void BsdNetworkClient::udpReadLoop() {
     // F16 fix: buffer must be at least MaxPacketSize (17 header + 4096 payload = 4113).
     // The old 2048-byte buffer silently truncated large Opus frames.
     std::vector<uint8_t> buffer(4200);
@@ -231,7 +231,7 @@ void NetworkClient::udpReadLoop() {
     udpRunning_ = false;
 }
 
-int NetworkClient::getBoundUDPPort() const {
+int BsdNetworkClient::getBoundUDPPort() const {
     return boundUdpPort_;
 }
 

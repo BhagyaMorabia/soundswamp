@@ -55,28 +55,16 @@ func (g *QRGenerator) GeneratePNG(payload Payload, size int) ([]byte, error) {
 // GetLocalIP detects the primary local network IP address,
 // filtering out loopback and virtual adapter addresses.
 func GetLocalIP() (string, error) {
-	addrs, err := net.InterfaceAddrs()
+	// Dial a public IP via UDP to force the OS to determine the preferred outbound interface.
+	// This does not actually send any packets over the network.
+	conn, err := net.Dial("udp", "8.8.8.8:80")
 	if err != nil {
-		return "", fmt.Errorf("get interface addrs: %w", err)
+		return "", fmt.Errorf("failed to determine local ip: %w", err)
 	}
+	defer conn.Close()
 
-	// Prefer non-loopback IPv4 addresses
-	for _, addr := range addrs {
-		ipNet, ok := addr.(*net.IPNet)
-		if !ok {
-			continue
-		}
-		ip := ipNet.IP
-		if ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
-			continue
-		}
-		if ip.To4() == nil {
-			continue // skip IPv6
-		}
-		return ip.String(), nil
-	}
-
-	return "", fmt.Errorf("no suitable local IP found")
+	localAddr := conn.LocalAddr().(*net.UDPAddr)
+	return localAddr.IP.String(), nil
 }
 
 // GetLocalIPForInterface returns the IPv4 address of a specific network interface.

@@ -39,6 +39,9 @@ type Manager struct {
 	// Stats
 	totalPacketsSent atomic.Int64
 	totalBytesSent   atomic.Int64
+	
+	// Pacing
+	lastSendUnixNano atomic.Int64
 }
 
 // NewManager creates a new stream manager bound to the given UDP port.
@@ -123,6 +126,14 @@ func (m *Manager) SetFrameSize(clientID string, frameMs int) {
 //   - channel: which surround channel this data represents
 //   - captureTimestamp: the server capture time in microseconds
 func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captureTimestamp int64) {
+	// Pacing: ensure at least 1ms between UDP bursts to prevent micro-congestion on Wi-Fi
+	now := time.Now().UnixNano()
+	last := m.lastSendUnixNano.Load()
+	if last > 0 && now-last < 1_000_000 {
+		time.Sleep(time.Duration(1_000_000 - (now - last)))
+	}
+	m.lastSendUnixNano.Store(time.Now().UnixNano())
+
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -168,8 +179,12 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 			continue
 		}
 
-		m.totalPacketsSent.Add(1)
+		sent := m.totalPacketsSent.Add(1)
 		m.totalBytesSent.Add(int64(len(data)))
+        
+		if sent%100 == 0 {
+			m.logger.Info("debug: sent 100 UDP packets", "client_id", cs.ID, "addr", cs.Addr.String(), "last_size", len(data))
+		}
 	}
 }
 

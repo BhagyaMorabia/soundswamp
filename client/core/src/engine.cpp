@@ -148,13 +148,14 @@ Engine::Engine(const EngineConfig& config)
       handshakeComplete_(false),
       running_(false) {
 
-    network_      = std::make_unique<NetworkClient>();
+    network_      = std::make_unique<BsdNetworkClient>();
     clockSync_    = std::make_unique<ClockSync>();
     jitterBuffer_ = std::make_unique<JitterBuffer>(config.sampleRate, config.channels);
     decoder_      = std::make_unique<Decoder>(config.sampleRate, config.channels);
 
     network_->setTCPMessageCallback([this](const std::string& msg) { handleTCPMessage(msg); });
     network_->setUDPPacketCallback([this](const uint8_t* data, size_t len) { handleUDPPacket(data, len); });
+    lastSeqNum_ = 0;
 }
 
 Engine::~Engine() {
@@ -316,6 +317,30 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
 
     if (pkt.type == PacketType::Audio) {
         int64_t localRecvTs = clockSync_->getLocalTimeUs();
+
+        // Implement Packet Loss Concealment (PLC)
+        if (lastSeqNum_ != 0 && pkt.seqNum > lastSeqNum_ + 1) {
+            uint32_t lostPackets = pkt.seqNum - lastSeqNum_ - 1;
+            // Cap PLC frames to avoid spinning too long if seqNum jumps wildly
+            if (lostPackets > 10) lostPackets = 10;
+            
+            for (uint32_t i = 1; i <= lostPackets; ++i) {
+                std::vector<float> missingPcm;
+                if (decoder_->decodeMissing(missingPcm) && !missingPcm.empty()) {
+                    // Interpolate the timestamp for the missing packet
+                    int64_t frameDurationUs = (decoder_->getFrameSamples() * 1000000LL) / config_.sampleRate;
+                    int64_t interpolatedTs = pkt.timestampUs - (lostPackets - i + 1) * frameDurationUs;
+                    
+                    jitterBuffer_->push(missingPcm.data(),
+                                        missingPcm.size() / static_cast<size_t>(config_.channels),
+                                        interpolatedTs,
+                                        localRecvTs,
+                                        clockSync_->getOffsetUs());
+                    LOGI("PLC inserted missing frame seq=%u ts=%lld", lastSeqNum_ + i, (long long)interpolatedTs);
+                }
+            }
+        }
+        lastSeqNum_ = pkt.seqNum;
 
         std::vector<float> pcm;
         bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pcm);

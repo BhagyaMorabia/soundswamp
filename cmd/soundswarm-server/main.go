@@ -271,6 +271,19 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 		// This is immune to GC pauses: a pause delays the loop iteration but does
 		// not advance totalSamplesProcessed, so the timestamp remains accurate.
 		captureTs := pipelineStartUs + (totalSamplesProcessed*1_000_000)/int64(format.SampleRate)
+		
+		// Soft-sync check: if hardware drops frames, totalSamplesProcessed will lag behind
+		// real time. Every ~10 seconds of audio, check against the wall clock.
+		if totalSamplesProcessed > 0 && totalSamplesProcessed%(10*int64(format.SampleRate)) == 0 {
+			nowUs := ssync.ServerTimeNow()
+			deltaUs := nowUs - captureTs
+			if deltaUs > 50000 || deltaUs < -50000 { // 50ms threshold
+				logger.Warn("Hardware audio drift detected, soft-syncing", "delta_us", deltaUs)
+				pipelineStartUs += deltaUs
+				captureTs += deltaUs
+			}
+		}
+		
 		totalSamplesProcessed += int64(n / format.Channels)
 
 		// 2. Demux and Encode

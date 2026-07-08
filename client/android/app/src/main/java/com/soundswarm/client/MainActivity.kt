@@ -25,6 +25,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Request POST_NOTIFICATIONS on Android 13+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(android.Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
+        }
+
         client = SoundSwarmClient(this)
 
         tvStatus = findViewById(R.id.tvStatus)
@@ -35,7 +42,7 @@ class MainActivity : AppCompatActivity() {
             val integrator = IntentIntegrator(this)
             integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE)
             integrator.setPrompt("Scan SoundSwarm QR Code")
-            integrator.setCameraId(0)
+            integrator.setOrientationLocked(false)
             integrator.setBeepEnabled(false)
             integrator.setBarcodeImageEnabled(false)
             integrator.initiateScan()
@@ -107,11 +114,23 @@ class MainActivity : AppCompatActivity() {
             tvStatus.setTextColor(android.graphics.Color.GREEN)
             btnScan.visibility = View.GONE
             btnDisconnect.visibility = View.VISIBLE
+            
+            // Start KeepAliveService to allow background execution
+            val serviceIntent = Intent(this, KeepAliveService::class.java)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
         } else {
             tvStatus.text = "Not Connected"
             tvStatus.setTextColor(android.graphics.Color.WHITE)
             btnScan.visibility = View.VISIBLE
             btnDisconnect.visibility = View.GONE
+            
+            // Stop KeepAliveService
+            val serviceIntent = Intent(this, KeepAliveService::class.java)
+            stopService(serviceIntent)
         }
     }
 

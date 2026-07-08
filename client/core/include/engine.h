@@ -51,12 +51,13 @@ private:
 
     EngineConfig config_;
 
-    std::unique_ptr<NetworkClient> network_;
+    std::unique_ptr<INetworkClient> network_;
     std::unique_ptr<ClockSync>     clockSync_;
     std::unique_ptr<JitterBuffer>  jitterBuffer_;
     std::unique_ptr<Decoder>       decoder_;
 
     std::string clientId_;
+    uint32_t lastSeqNum_;
 
     // isConnected_: true after JOIN_ACCEPT (TCP authenticated).
     std::atomic<bool> isConnected_;

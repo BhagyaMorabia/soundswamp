@@ -85,7 +85,7 @@ func (p probeResult) rtt() int64 {
 
 // offset calculates the clock offset in microseconds (server - client).
 func (p probeResult) offset() int64 {
-	return ((p.ClientRecvTs - p.ServerSendTs) + (p.ClientSendTs - p.ServerRecvTs)) / 2
+	return ((p.ServerSendTs - p.ClientRecvTs) + (p.ServerRecvTs - p.ClientSendTs)) / 2
 }
 
 // TCPWriter abstracts writing length-prefixed JSON messages to a TCP connection.

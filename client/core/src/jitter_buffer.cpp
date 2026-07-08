@@ -114,23 +114,26 @@ size_t JitterBuffer::pull(float* outPcm, size_t numFrames,
 
         AudioFrame& frame = ring_[tail & RING_MASK];
 
+        // Advance the target capture timestamp by the amount of audio we've already output in this pull() call.
+        int64_t currentTargetUs = targetCaptureUs + static_cast<int64_t>((outOffset / channels_) * 1000000LL / sampleRate_);
+
         // Discard frames that are too old (more than 2 frames behind the target).
         // 2 frames of leeway (≈20ms at 10ms frame size) prevents excessive discarding.
         int64_t frameDurationUs = static_cast<int64_t>(
             (frame.pcm.size() / channels_) * 1000000LL / sampleRate_);
 
-        if (frame.captureTimestampUs < targetCaptureUs - (frameDurationUs * 2)) {
+        if (frame.captureTimestampUs < currentTargetUs - (frameDurationUs * 2)) {
             // This frame is too old — skip it.
             tail_.store(tail + 1, std::memory_order_release);
             frameReadOffset_ = 0;
             LOGD("pull: dropping stale frame ts=%lld target=%lld",
-                 (long long)frame.captureTimestampUs, (long long)targetCaptureUs);
+                 (long long)frame.captureTimestampUs, (long long)currentTargetUs);
             continue;
         }
 
         // If the next frame is in the future (buffer is running ahead),
         // we output silence to stay on the playback timeline.
-        if (frame.captureTimestampUs > targetCaptureUs + frameDurationUs) {
+        if (frame.captureTimestampUs > currentTargetUs + frameDurationUs) {
             // Too far ahead — output silence for now.
             break;
         }

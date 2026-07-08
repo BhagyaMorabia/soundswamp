@@ -1,6 +1,7 @@
 #include "codec.h"
 #include <opus.h>
 #include <stdexcept>
+#include <cstring>
 
 
 namespace soundswarm {
@@ -35,8 +36,31 @@ Decoder::~Decoder() {
 }
 
 bool Decoder::decode(const uint8_t* opusData, size_t length, std::vector<float>& outPcm) {
-    outPcm.resize(maxFrameSamples_ * channels_);
+    // Fast path check for uncompressed PCM fallback
+    // The Go server sends raw PCM if CGO is disabled.
+    // A 5ms Opus packet is max ~318 bytes. 5ms raw stereo PCM is 960 bytes.
+    // A 10ms Opus packet is max ~637 bytes. 10ms raw stereo PCM is 1920 bytes.
+    // So if length perfectly matches a known raw PCM size, bypass Opus.
+    bool isPcm = false;
+    int ms = (length * 1000) / (sampleRate_ * channels_ * 2);
+    if (ms == 5 || ms == 10 || ms == 20 || ms == 40 || ms == 60) {
+        if (length == static_cast<size_t>(ms * sampleRate_ / 1000 * channels_ * 2)) {
+            isPcm = true;
+        }
+    }
 
+    if (isPcm) {
+        int pcmSamples = length / 2;
+        outPcm.resize(pcmSamples);
+        for (int i = 0; i < pcmSamples; ++i) {
+            int16_t sample;
+            std::memcpy(&sample, opusData + (i * 2), sizeof(int16_t));
+            outPcm[i] = static_cast<float>(sample) / 32768.0f;
+        }
+        return true;
+    }
+
+    outPcm.resize(maxFrameSamples_ * channels_);
     int decodedSamples = opus_decode_float(
         decoder_,
         opusData,
@@ -53,9 +77,10 @@ bool Decoder::decode(const uint8_t* opusData, size_t length, std::vector<float>&
         if (length > 0 && length % (channels_ * 2) == 0) {
             int pcmSamples = length / 2; // total float samples across all channels
             outPcm.resize(pcmSamples);
-            const int16_t* pcm16 = reinterpret_cast<const int16_t*>(opusData);
             for (int i = 0; i < pcmSamples; ++i) {
-                outPcm[i] = static_cast<float>(pcm16[i]) / 32768.0f;
+                int16_t sample;
+                std::memcpy(&sample, opusData + (i * 2), sizeof(int16_t));
+                outPcm[i] = static_cast<float>(sample) / 32768.0f;
             }
             return true;
         }

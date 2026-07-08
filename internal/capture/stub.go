@@ -62,6 +62,10 @@ func (s *StubCapture) Read(buf []float32) (int, error) {
 		}
 	}
 
+	// Calculate how long this frame should take in real-time
+	frameDurationMs := (len(buf) / s.format.Channels) * 1000 / s.format.SampleRate
+	time.Sleep(time.Duration(frameDurationMs) * time.Millisecond)
+
 	return len(buf), nil
 }
 

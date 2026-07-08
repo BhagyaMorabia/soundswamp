@@ -310,9 +310,16 @@ func (w *WASAPICapture) captureLoop() {
 // processCaptureBuffer reads all available data from the WASAPI capture client.
 func (w *WASAPICapture) processCaptureBuffer() {
 	for {
+		w.mu.Lock()
+		if !w.running.Load() || w.captureClient == 0 {
+			w.mu.Unlock()
+			break
+		}
+
 		var numFramesInNextPacket uint32
 		hr := vGetNextPacketSize(w.captureClient, &numFramesInNextPacket)
 		if hr != 0 || numFramesInNextPacket == 0 {
+			w.mu.Unlock()
 			break
 		}
 
@@ -322,9 +329,11 @@ func (w *WASAPICapture) processCaptureBuffer() {
 
 		hr = vGetBuffer(w.captureClient, &dataPtr, &numFrames, &flags, nil, nil)
 		if hr != 0 {
+			w.mu.Unlock()
 			break
 		}
 		if numFrames == 0 {
+			w.mu.Unlock()
 			break
 		}
 
@@ -353,6 +362,7 @@ func (w *WASAPICapture) processCaptureBuffer() {
 
 		// Release the buffer
 		vReleaseBuffer(w.captureClient, numFrames)
+		w.mu.Unlock()
 	}
 }
 
@@ -511,18 +521,18 @@ func vGetMixFormat(client uintptr, format *uintptr) uintptr {
 	return ret
 }
 
-// IAudioClient::GetStreamLatency — vtable index 7
+// IAudioClient::GetStreamLatency — vtable index 5
 func vGetStreamLatency(client uintptr, latency *int64) uintptr {
 	vtable := *(*uintptr)(unsafe.Pointer(client))
-	fn := *(*uintptr)(unsafe.Pointer(vtable + 7*unsafe.Sizeof(uintptr(0))))
+	fn := *(*uintptr)(unsafe.Pointer(vtable + 5*unsafe.Sizeof(uintptr(0))))
 	ret, _, _ := callN(fn, client, uintptr(unsafe.Pointer(latency)))
 	return ret
 }
 
-// IAudioClient::SetEventHandle — vtable index 12
+// IAudioClient::SetEventHandle — vtable index 13
 func vSetEventHandle(client uintptr, eventHandle uintptr) uintptr {
 	vtable := *(*uintptr)(unsafe.Pointer(client))
-	fn := *(*uintptr)(unsafe.Pointer(vtable + 12*unsafe.Sizeof(uintptr(0))))
+	fn := *(*uintptr)(unsafe.Pointer(vtable + 13*unsafe.Sizeof(uintptr(0))))
 	ret, _, _ := callN(fn, client, eventHandle)
 	return ret
 }
@@ -535,18 +545,18 @@ func vGetService(client uintptr, iid *windows.GUID, service *uintptr) uintptr {
 	return ret
 }
 
-// IAudioClient::Start — vtable index 5
+// IAudioClient::Start — vtable index 10
 func vStart(client uintptr) uintptr {
 	vtable := *(*uintptr)(unsafe.Pointer(client))
-	fn := *(*uintptr)(unsafe.Pointer(vtable + 5*unsafe.Sizeof(uintptr(0))))
+	fn := *(*uintptr)(unsafe.Pointer(vtable + 10*unsafe.Sizeof(uintptr(0))))
 	ret, _, _ := callN(fn, client)
 	return ret
 }
 
-// IAudioClient::Stop — vtable index 6
+// IAudioClient::Stop — vtable index 11
 func vStop(client uintptr) uintptr {
 	vtable := *(*uintptr)(unsafe.Pointer(client))
-	fn := *(*uintptr)(unsafe.Pointer(vtable + 6*unsafe.Sizeof(uintptr(0))))
+	fn := *(*uintptr)(unsafe.Pointer(vtable + 11*unsafe.Sizeof(uintptr(0))))
 	ret, _, _ := callN(fn, client)
 	return ret
 }
