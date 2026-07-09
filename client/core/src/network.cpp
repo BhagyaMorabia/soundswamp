@@ -9,6 +9,7 @@
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
@@ -36,6 +37,9 @@ BsdNetworkClient::~BsdNetworkClient() {
 bool BsdNetworkClient::connectTCP(const std::string& ip, int port) {
     tcpSocket_ = socket(AF_INET, SOCK_STREAM, 0);
     if (tcpSocket_ < 0) return false;
+
+    int flag = 1;
+    setsockopt(tcpSocket_, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&flag), sizeof(flag));
 
     struct sockaddr_in serverAddr{};
     serverAddr.sin_family = AF_INET;
@@ -128,9 +132,18 @@ void BsdNetworkClient::setTCPMessageCallback(std::function<void(const std::strin
 
 void BsdNetworkClient::tcpReadLoop() {
     while (tcpRunning_) {
-        uint32_t lenNetwork;
-        int bytesRead = recv(tcpSocket_, reinterpret_cast<char*>(&lenNetwork), 4, 0);
-        if (bytesRead <= 0) break;
+        uint32_t lenNetwork = 0;
+        char* lenPtr = reinterpret_cast<char*>(&lenNetwork);
+        int headerRead = 0;
+        while (headerRead < 4) {
+            int r = recv(tcpSocket_, lenPtr + headerRead, 4 - headerRead, 0);
+            if (r <= 0) {
+                tcpRunning_ = false;
+                break;
+            }
+            headerRead += r;
+        }
+        if (!tcpRunning_) break;
 
         uint32_t len = ntohl(lenNetwork);
         if (len > 65536) break; // Sanity check

@@ -40,9 +40,10 @@ bool UDPPacket::deserialize(const uint8_t* data, size_t length, UDPPacket& outPa
     outPacket.timestampUs = be64toh(tsNetwork);
 
     outPacket.channelMask = static_cast<ChannelMask>(data[14]);
+    outPacket.codecFlag = static_cast<CodecFlag>(data[15]);
 
     uint16_t payloadLenNetwork;
-    std::memcpy(&payloadLenNetwork, data + 15, sizeof(uint16_t));
+    std::memcpy(&payloadLenNetwork, data + 16, sizeof(uint16_t));
     uint16_t payloadLen = ntohs(payloadLenNetwork);
 
     // Sanity check
@@ -66,9 +67,10 @@ std::vector<uint8_t> UDPPacket::serialize() const {
     std::memcpy(buffer.data() + 6, &tsNetwork, sizeof(int64_t));
 
     buffer[14] = static_cast<uint8_t>(channelMask);
+    buffer[15] = static_cast<uint8_t>(codecFlag);
 
     uint16_t payloadLenNetwork = htons(static_cast<uint16_t>(payload.size()));
-    std::memcpy(buffer.data() + 15, &payloadLenNetwork, sizeof(uint16_t));
+    std::memcpy(buffer.data() + 16, &payloadLenNetwork, sizeof(uint16_t));
 
     if (!payload.empty()) {
         std::memcpy(buffer.data() + UDP_HEADER_SIZE, payload.data(), payload.size());

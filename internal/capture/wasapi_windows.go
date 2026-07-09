@@ -15,6 +15,7 @@ package capture
 import (
 	"fmt"
 	"math"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"syscall"
@@ -78,6 +79,7 @@ type WASAPICapture struct {
 	// State
 	running   atomic.Bool
 	stopChan  chan struct{}
+	wg        sync.WaitGroup
 
 	// Ring buffer for captured audio
 	ringBuf     []float32
@@ -110,6 +112,9 @@ func (w *WASAPICapture) Start() error {
 	if w.running.Load() {
 		return fmt.Errorf("capture already running")
 	}
+
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
 
 	// Initialize COM for this goroutine
 	if err := windows.CoInitializeEx(0, windows.COINIT_MULTITHREADED); err != nil {
@@ -200,6 +205,7 @@ func (w *WASAPICapture) Start() error {
 	w.measureLoopbackLatency()
 
 	// Start the capture goroutine
+	w.wg.Add(1)
 	go w.captureLoop()
 
 	return nil
@@ -210,15 +216,17 @@ func (w *WASAPICapture) Stop() error {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	if !w.running.Load() {
+	if !w.running.Swap(false) {
 		return nil
 	}
 
-	w.running.Store(false)
 	close(w.stopChan)
 
 	// Signal any blocked readers
 	w.ringCond.Broadcast()
+
+	// Wait for captureLoop to exit completely to prevent Use-After-Free
+	w.wg.Wait()
 
 	// Stop the audio client
 	if w.audioClient != 0 {
@@ -292,6 +300,19 @@ func (w *WASAPICapture) LoopbackLatencyMs() float64 {
 
 // captureLoop runs in a goroutine, reading from WASAPI and writing to the ring buffer.
 func (w *WASAPICapture) captureLoop() {
+	defer w.wg.Done()
+
+	// Ensure this goroutine stays on a single OS thread for COM rules
+	runtime.LockOSThread()
+	defer runtime.UnlockOSThread()
+
+	// Initialize COM for the capture thread
+	if err := windows.CoInitializeEx(0, windows.COINIT_MULTITHREADED); err != nil {
+		if err != windows.ERROR_SUCCESS && !isAlreadyInitialized(err) {
+			return
+		}
+	}
+
 	// Set thread priority for audio via MMCSS
 	taskName, _ := windows.UTF16PtrFromString("Pro Audio")
 	var taskIndex uint32
@@ -308,18 +329,16 @@ func (w *WASAPICapture) captureLoop() {
 }
 
 // processCaptureBuffer reads all available data from the WASAPI capture client.
+// Note: This is lock-free regarding w.mu because w.wg ensures this completes before Stop() releases COM resources.
 func (w *WASAPICapture) processCaptureBuffer() {
 	for {
-		w.mu.Lock()
 		if !w.running.Load() || w.captureClient == 0 {
-			w.mu.Unlock()
 			break
 		}
 
 		var numFramesInNextPacket uint32
 		hr := vGetNextPacketSize(w.captureClient, &numFramesInNextPacket)
 		if hr != 0 || numFramesInNextPacket == 0 {
-			w.mu.Unlock()
 			break
 		}
 
@@ -329,11 +348,9 @@ func (w *WASAPICapture) processCaptureBuffer() {
 
 		hr = vGetBuffer(w.captureClient, &dataPtr, &numFrames, &flags, nil, nil)
 		if hr != 0 {
-			w.mu.Unlock()
 			break
 		}
 		if numFrames == 0 {
-			w.mu.Unlock()
 			break
 		}
 
@@ -362,7 +379,6 @@ func (w *WASAPICapture) processCaptureBuffer() {
 
 		// Release the buffer
 		vReleaseBuffer(w.captureClient, numFrames)
-		w.mu.Unlock()
 	}
 }
 

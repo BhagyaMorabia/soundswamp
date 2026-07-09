@@ -66,6 +66,9 @@ private:
     // The audio thread gates on this to avoid playing audio with offsetUs=0 (F11 fix).
     std::atomic<bool> handshakeComplete_;
 
+    // Pre-allocated buffer for zero-allocation audio decoding on the hot path
+    std::vector<float> decodeBuffer_;
+
     std::function<void(bool, const std::string&)> onConnectionStatus_;
     std::function<void(double)>                    onJitterUpdate_;
 

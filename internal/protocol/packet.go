@@ -1,13 +1,15 @@
 // Package protocol defines the SoundSwarm wire format for UDP audio packets
 // and TCP control messages.
 //
-// UDP Packet Layout (17-byte header + variable payload):
+// UDP Packet Layout (18-byte header + variable payload):
 //
 //	┌──────────┬──────────┬──────────────┬──────────────────┐
 //	│ Ver (1B) │ Type(1B) │ SeqNum (4B)  │ Timestamp (8B µs)│
 //	├──────────┴──────────┼──────────────┼──────────────────┤
-//	│ ChanMask (1B)       │ PayloadLen(2B)│ Payload (var)   │
-//	└─────────────────────┴──────────────┴──────────────────┘
+//	│ ChanMask (1B)       │ Codec(1B)    │ PayloadLen(2B)   │
+//	├─────────────────────┴──────────────┴──────────────────┤
+//	│ Payload (var)                                         │
+//	└───────────────────────────────────────────────────────┘
 package protocol
 
 import (
@@ -21,7 +23,7 @@ const (
 	ProtocolVersion uint8 = 1
 
 	// HeaderSize is the fixed-size UDP packet header in bytes.
-	HeaderSize = 17
+	HeaderSize = 18
 
 	// MaxPayloadSize caps a single Opus frame to prevent amplification attacks.
 	// Opus at 512kbps with 60ms frames produces ~3840 bytes. 4096 is generous.
@@ -81,6 +83,14 @@ func (c ChannelMask) String() string {
 	}
 }
 
+// CodecFlag identifies the codec format of the payload.
+type CodecFlag uint8
+
+const (
+	CodecOpus CodecFlag = 0x00
+	CodecPCM  CodecFlag = 0x01
+)
+
 // Packet represents a fully parsed SoundSwarm UDP packet.
 type Packet struct {
 	Version     uint8
@@ -88,6 +98,7 @@ type Packet struct {
 	SeqNum      uint32
 	TimestampUs int64       // server capture timestamp in microseconds since epoch
 	ChannelMask ChannelMask
+	Codec       CodecFlag
 	Payload     []byte
 }
 
@@ -112,7 +123,8 @@ func (p *Packet) Marshal() ([]byte, error) {
 	binary.BigEndian.PutUint32(buf[2:6], p.SeqNum)
 	binary.BigEndian.PutUint64(buf[6:14], uint64(p.TimestampUs))
 	buf[14] = uint8(p.ChannelMask)
-	binary.BigEndian.PutUint16(buf[15:17], uint16(len(p.Payload)))
+	buf[15] = uint8(p.Codec)
+	binary.BigEndian.PutUint16(buf[16:18], uint16(len(p.Payload)))
 
 	copy(buf[HeaderSize:], p.Payload)
 	return buf, nil
@@ -134,7 +146,8 @@ func (p *Packet) MarshalInto(buf []byte) (int, error) {
 	binary.BigEndian.PutUint32(buf[2:6], p.SeqNum)
 	binary.BigEndian.PutUint64(buf[6:14], uint64(p.TimestampUs))
 	buf[14] = uint8(p.ChannelMask)
-	binary.BigEndian.PutUint16(buf[15:17], uint16(len(p.Payload)))
+	buf[15] = uint8(p.Codec)
+	binary.BigEndian.PutUint16(buf[16:18], uint16(len(p.Payload)))
 	copy(buf[HeaderSize:], p.Payload)
 
 	return needed, nil
@@ -153,7 +166,7 @@ func Unmarshal(data []byte) (*Packet, error) {
 		return nil, fmt.Errorf("%w: got %d, want %d", ErrBadVersion, ver, ProtocolVersion)
 	}
 
-	payloadLen := int(binary.BigEndian.Uint16(data[15:17]))
+	payloadLen := int(binary.BigEndian.Uint16(data[16:18]))
 	if payloadLen > MaxPayloadSize {
 		return nil, ErrPayloadTooLarge
 	}
@@ -168,6 +181,7 @@ func Unmarshal(data []byte) (*Packet, error) {
 		SeqNum:      binary.BigEndian.Uint32(data[2:6]),
 		TimestampUs: int64(binary.BigEndian.Uint64(data[6:14])),
 		ChannelMask: ChannelMask(data[14]),
+		Codec:       CodecFlag(data[15]),
 		Payload:     data[HeaderSize : HeaderSize+payloadLen],
 	}, nil
 }

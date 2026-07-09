@@ -149,22 +149,28 @@ func (d *Demuxer) DemuxInto(interleaved []float32, output [][]float32) error {
 	return nil
 }
 
-// DownmixToStereo converts multi-channel PCM to stereo using ITU-R BS.775 coefficients.
-// This is used when a client is assigned the stereo mix channel in surround mode.
-func DownmixToStereo(channels [][]float32, layout ChannelLayout) ([]float32, error) {
+// DownmixToStereoInto converts multi-channel PCM to stereo using ITU-R BS.775 coefficients.
+// It writes the result into the provided out buffer to avoid GC allocation.
+// The out buffer must have length >= len(channels[0]) * 2.
+func DownmixToStereoInto(channels [][]float32, layout ChannelLayout, out []float32) error {
 	if len(channels) != layout.Channels {
-		return nil, fmt.Errorf("expected %d channels, got %d", layout.Channels, len(channels))
+		return fmt.Errorf("expected %d channels, got %d", layout.Channels, len(channels))
+	}
+	if len(channels) == 0 {
+		return nil
+	}
+	n := len(channels[0])
+	if len(out) < n*2 {
+		return fmt.Errorf("output buffer too small: need %d, got %d", n*2, len(out))
 	}
 
 	if layout.Channels == 2 {
 		// Already stereo — interleave directly
-		n := len(channels[0])
-		out := make([]float32, n*2)
 		for i := 0; i < n; i++ {
 			out[i*2] = channels[0][i]
 			out[i*2+1] = channels[1][i]
 		}
-		return out, nil
+		return nil
 	}
 
 	// 5.1 downmix: ITU-R BS.775
@@ -173,9 +179,6 @@ func DownmixToStereo(channels [][]float32, layout ChannelLayout) ([]float32, err
 	// LFE is typically discarded in downmix (phones can't reproduce it usefully)
 	const centerMix = 0.707
 	const surroundMix = 0.707
-
-	n := len(channels[0])
-	out := make([]float32, n*2)
 
 	for i := 0; i < n; i++ {
 		var fl, fr, c, sl, sr float32
@@ -197,7 +200,7 @@ func DownmixToStereo(channels [][]float32, layout ChannelLayout) ([]float32, err
 		out[i*2+1] = fr + centerMix*c + surroundMix*sr
 	}
 
-	return out, nil
+	return nil
 }
 
 // Layout returns the demuxer's channel layout.

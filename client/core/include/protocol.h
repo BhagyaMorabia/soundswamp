@@ -7,7 +7,7 @@
 namespace soundswarm {
 
 constexpr uint8_t PROTOCOL_VERSION = 1;
-constexpr size_t UDP_HEADER_SIZE = 17;
+constexpr size_t UDP_HEADER_SIZE = 18;
 constexpr size_t MAX_PACKET_SIZE = 1400;
 
 // UDP Packet Types
@@ -30,6 +30,12 @@ enum class ChannelMask : uint8_t {
     StereoMix = 255
 };
 
+// Codec Flags
+enum class CodecFlag : uint8_t {
+    Opus = 0,
+    PCM = 1
+};
+
 // UDP Packet Layout
 struct UDPPacket {
     uint8_t version;
@@ -37,6 +43,7 @@ struct UDPPacket {
     uint32_t seqNum;
     int64_t timestampUs;
     ChannelMask channelMask;
+    CodecFlag codecFlag;
     std::vector<uint8_t> payload;
 
     // Deserializes a raw byte buffer into a UDPPacket

@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
     
-    <!-- Required for Oboe depending on setup, but we only do playback right now -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" /> 
+    <!-- Required to hold WifiLocks for low-latency streaming -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     
     <!-- Required for background audio playback -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     
-    <uses-feature android:name="android.hardware.camera" android:required="true" />
+    <!-- Camera is used for QR codes, but not strictly required to use the app (manual IP entry) -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
@@ -39,6 +41,11 @@
             android:name=".KeepAliveService"
             android:foregroundServiceType="mediaPlayback"
             android:exported="false" />
+            
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation" />
     </application>
 
 </manifest>

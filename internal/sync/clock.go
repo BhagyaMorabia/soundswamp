@@ -173,31 +173,24 @@ func (cs *ClockSync) InitialHandshake(clientID string, conn io.ReadWriter) error
 		}
 	}
 
-	// Outlier rejection: discard rounds with RTT > 2× median RTT
-	rtts := make([]int64, len(results))
-	for i, r := range results {
-		rtts[i] = r.rtt()
+	if len(results) == 0 {
+		return fmt.Errorf("no sync rounds completed")
 	}
-	medianRTT := medianInt64(rtts)
-	threshold := medianRTT * 2
 
-	var filtered []probeResult
-	for _, r := range results {
-		if r.rtt() <= threshold {
-			filtered = append(filtered, r)
+	// Find the single round with the lowest RTT
+	bestRound := results[0]
+	bestRTT := bestRound.rtt()
+
+	for _, r := range results[1:] {
+		rtt := r.rtt()
+		if rtt < bestRTT {
+			bestRTT = rtt
+			bestRound = r
 		}
 	}
-	if len(filtered) == 0 {
-		filtered = results // fallback: use all if everything was filtered
-	}
 
-	// Compute final offset as median of remaining offsets
-	offsets := make([]int64, len(filtered))
-	for i, r := range filtered {
-		offsets[i] = r.offset()
-	}
-	finalOffset := medianInt64(offsets)
-	finalRTT := medianRTT
+	finalOffset := bestRound.offset()
+	finalRTT := bestRTT
 
 	// Store the client clock state
 	cc := &ClientClock{
@@ -224,7 +217,7 @@ func (cs *ClockSync) InitialHandshake(clientID string, conn io.ReadWriter) error
 		"client", clientID,
 		"offset_us", finalOffset,
 		"rtt_us", finalRTT,
-		"rounds_used", len(filtered),
+		"rounds_used", 1,
 		"rounds_total", InitialProbeRounds,
 	)
 

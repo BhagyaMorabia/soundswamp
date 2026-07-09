@@ -3,6 +3,7 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include "protocol.h"
 
 struct OpusDecoder;
 
@@ -18,9 +19,9 @@ public:
     Decoder(const Decoder&) = delete;
     Decoder& operator=(const Decoder&) = delete;
 
-    // Decodes an Opus packet into interleaved PCM float32.
+    // Decodes an audio packet into interleaved PCM float32.
     // Returns true on success, false on error.
-    bool decode(const uint8_t* opusData, size_t length, std::vector<float>& outPcm);
+    bool decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm);
 
     // Decodes a missing packet to trigger Packet Loss Concealment (PLC).
     bool decodeMissing(std::vector<float>& outPcm);

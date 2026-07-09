@@ -12,6 +12,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
+	gosync "sync"
 )
 
 // SampleRate is the fixed sample rate for the entire SoundSwarm pipeline.
@@ -85,7 +86,8 @@ func (e *Encoder) Encode(pcm []float32) ([]byte, error) {
 	}
 
 	// Fallback: encode as int16 little-endian PCM
-	buf := make([]byte, len(pcm)*2)
+	ptr := pcmEncodePool.Get().(*[]byte)
+	buf := (*ptr)[:len(pcm)*2]
 	for i, sample := range pcm {
 		// Clamp to [-1.0, 1.0] then scale to int16
 		if sample > 1.0 {
@@ -98,6 +100,21 @@ func (e *Encoder) Encode(pcm []float32) ([]byte, error) {
 	}
 
 	return buf, nil
+}
+
+var pcmEncodePool = gosync.Pool{
+	New: func() interface{} {
+		// Max frame is 60ms stereo (48000 * 60 / 1000 * 2 = 5760 samples -> 11520 bytes)
+		b := make([]byte, 16384)
+		return &b
+	},
+}
+
+// ReturnEncoderBuffer returns a buffer to the encoder pool to avoid GC overhead.
+func ReturnEncoderBuffer(buf []byte) {
+	if cap(buf) == 16384 {
+		pcmEncodePool.Put(&buf)
+	}
 }
 
 // FrameSamples returns the number of samples per channel for the current frame size.

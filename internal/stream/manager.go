@@ -10,9 +10,18 @@ import (
 	"sync/atomic"
 	"time"
 
+	"golang.org/x/net/ipv4"
+
 	"github.com/soundswarm/soundswarm/internal/protocol"
 	ssync "github.com/soundswarm/soundswarm/internal/sync"
 )
+
+var payloadPool = gosync.Pool{
+	New: func() interface{} {
+		b := make([]byte, protocol.MaxPayloadSize)
+		return &b
+	},
+}
 
 // ClientStream holds per-client streaming state.
 type ClientStream struct {
@@ -24,6 +33,14 @@ type ClientStream struct {
 	Active        bool
 }
 
+// broadcastPacket encapsulates a frame for asynchronous transmission.
+type broadcastPacket struct {
+	opusData         []byte
+	channel          protocol.ChannelMask
+	captureTimestamp int64
+	codecFlag        protocol.CodecFlag
+}
+
 // Manager handles UDP audio distribution to all connected clients.
 type Manager struct {
 	conn      *net.UDPConn
@@ -32,6 +49,9 @@ type Manager struct {
 	logger    *slog.Logger
 	running   atomic.Bool
 	stopChan  chan struct{}
+
+	// Channel for decoupling audio capture from network I/O
+	broadcastChan chan broadcastPacket
 
 	// Packet buffer pool to reduce allocation on the hot path
 	packetBuf []byte
@@ -58,13 +78,39 @@ func NewManager(port int, logger *slog.Logger) (*Manager, error) {
 	// Set write buffer to 2MB for burst capacity
 	conn.SetWriteBuffer(2 * 1024 * 1024)
 
-	return &Manager{
-		conn:      conn,
-		clients:   make(map[string]*ClientStream),
-		logger:    logger,
-		stopChan:  make(chan struct{}),
-		packetBuf: make([]byte, protocol.MaxPacketSize),
-	}, nil
+	// Enable QoS / DSCP Expedited Forwarding (0xB8)
+	if p4 := ipv4.NewConn(conn); p4 != nil {
+		_ = p4.SetTOS(0xB8)
+	}
+
+	m := &Manager{
+		conn:          conn,
+		clients:       make(map[string]*ClientStream),
+		logger:        logger,
+		stopChan:      make(chan struct{}),
+		broadcastChan: make(chan broadcastPacket, 200), // Buffer for 200 frames (2 seconds)
+		packetBuf:     make([]byte, protocol.MaxPacketSize),
+	}
+	
+	go m.broadcastLoop()
+	return m, nil
+}
+
+func (m *Manager) broadcastLoop() {
+	for {
+		select {
+		case <-m.stopChan:
+			return
+		case pkt := <-m.broadcastChan:
+			m.doSendAudio(pkt.opusData, pkt.channel, pkt.captureTimestamp, pkt.codecFlag)
+			
+			// Return payload to pool
+			if cap(pkt.opusData) == protocol.MaxPayloadSize {
+				buf := pkt.opusData[:cap(pkt.opusData)]
+				payloadPool.Put(&buf)
+			}
+		}
+	}
 }
 
 // LocalAddr returns the local UDP address this manager is bound to.
@@ -118,22 +164,26 @@ func (m *Manager) SetFrameSize(clientID string, frameMs int) {
 	}
 }
 
-// SendAudio sends an encoded audio frame to all active clients.
-// This is the hot path — called once per Opus frame (every 10ms at default).
-//
-// Parameters:
-//   - opusData: the encoded Opus frame bytes
-//   - channel: which surround channel this data represents
-//   - captureTimestamp: the server capture time in microseconds
-func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captureTimestamp int64) {
-	// Pacing: ensure at least 1ms between UDP bursts to prevent micro-congestion on Wi-Fi
-	now := time.Now().UnixNano()
-	last := m.lastSendUnixNano.Load()
-	if last > 0 && now-last < 1_000_000 {
-		time.Sleep(time.Duration(1_000_000 - (now - last)))
-	}
-	m.lastSendUnixNano.Store(time.Now().UnixNano())
+// SendAudio queues an encoded audio frame to all active clients.
+func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captureTimestamp int64, codecFlag protocol.CodecFlag) {
+	// Copy data using the zero-allocation pool
+	ptr := payloadPool.Get().(*[]byte)
+	dataCopy := (*ptr)[:len(opusData)]
+	copy(dataCopy, opusData)
 
+	select {
+	case m.broadcastChan <- broadcastPacket{
+		opusData:         dataCopy,
+		channel:          channel,
+		captureTimestamp: captureTimestamp,
+		codecFlag:        codecFlag,
+	}:
+	default:
+		m.logger.Warn("broadcast channel full, dropping audio frame")
+	}
+}
+
+func (m *Manager) doSendAudio(opusData []byte, channel protocol.ChannelMask, captureTimestamp int64, codecFlag protocol.CodecFlag) {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -157,10 +207,11 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 			SeqNum:      cs.SeqNum,
 			TimestampUs: captureTimestamp,
 			ChannelMask: channel,
+			Codec:       codecFlag,
 			Payload:     opusData,
 		}
 
-		data, err := pkt.Marshal()
+		n, err := pkt.MarshalInto(m.packetBuf)
 		if err != nil {
 			m.logger.Error("failed to marshal packet",
 				"client_id", cs.ID,
@@ -169,7 +220,7 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 			continue
 		}
 
-		_, err = m.conn.WriteToUDP(data, cs.Addr)
+		_, err = m.conn.WriteToUDP(m.packetBuf[:n], cs.Addr)
 		if err != nil {
 			m.logger.Error("failed to send packet",
 				"client_id", cs.ID,
@@ -180,10 +231,10 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 		}
 
 		sent := m.totalPacketsSent.Add(1)
-		m.totalBytesSent.Add(int64(len(data)))
+		m.totalBytesSent.Add(int64(n))
         
 		if sent%100 == 0 {
-			m.logger.Info("debug: sent 100 UDP packets", "client_id", cs.ID, "addr", cs.Addr.String(), "last_size", len(data))
+			m.logger.Info("debug: sent 100 UDP packets", "client_id", cs.ID, "addr", cs.Addr.String(), "last_size", n)
 		}
 	}
 }

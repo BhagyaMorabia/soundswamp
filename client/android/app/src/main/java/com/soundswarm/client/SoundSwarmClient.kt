@@ -19,7 +19,10 @@ import android.util.Log
  * UDP audio stream gets sent through the cell tower and never reaches the laptop.
  * (F6 fix)
  */
-class SoundSwarmClient(private val context: Context) {
+class SoundSwarmClient(context: Context) {
+
+    private val appContext = context.applicationContext
+    private var currentNetworkCallback: ConnectivityManager.NetworkCallback? = null
 
     companion object {
         private const val TAG = "SoundSwarmClient"
@@ -36,20 +39,8 @@ class SoundSwarmClient(private val context: Context) {
 
     /**
      * Connects to the SoundSwarm server and starts synchronized audio playback.
-     *
-     * This method:
-     *   1. Requests the current Wi-Fi network from the OS
-     *   2. Binds the entire process to that network (all C++ sockets route via Wi-Fi)
-     *   3. Boots the native engine
-     *   4. Calls onResult(success, errorMsg) — NOT on the main thread
-     *
-     * @param serverIp   The IP address of the laptop server
-     * @param tcpPort    The TCP control port
-     * @param udpPort    The UDP stream port
-     * @param token      The cryptographic session token
-     * @param deviceName The human-readable name of this phone
-     * @param onResult   Callback invoked with (success: Boolean, errorMsg: String)
      */
+    @Synchronized
     fun connect(
         serverIp: String,
         tcpPort: Int,
@@ -60,14 +51,23 @@ class SoundSwarmClient(private val context: Context) {
     ) {
         Log.i(TAG, "Requesting Wi-Fi network binding before connecting to $serverIp...")
 
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // Unregister any previous callback to prevent memory leaks and zombie network bindings
+        currentNetworkCallback?.let {
+            try {
+                cm.unregisterNetworkCallback(it)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to unregister old callback", e)
+            }
+        }
 
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
             .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
 
-        cm.requestNetwork(request, object : ConnectivityManager.NetworkCallback() {
+        val callback = object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
                 Log.i(TAG, "Wi-Fi network available — binding process")
 
@@ -75,7 +75,6 @@ class SoundSwarmClient(private val context: Context) {
                 if (!bound) {
                     Log.e(TAG, "bindProcessToNetwork failed")
                     onResult(false, "Failed to bind to Wi-Fi network")
-                    cm.unregisterNetworkCallback(this)
                     return
                 }
 
@@ -83,27 +82,57 @@ class SoundSwarmClient(private val context: Context) {
                 val success = nativeConnect(serverIp, tcpPort, udpPort, token, deviceName)
                 Log.i(TAG, "nativeConnect result: $success")
                 onResult(success, if (success) "" else "Native engine failed to start")
-                // Keep callback registered so the binding stays alive for the session.
             }
 
             override fun onUnavailable() {
                 Log.e(TAG, "No Wi-Fi network available")
                 onResult(false, "Wi-Fi unavailable. Is the phone connected to the hotspot?")
+                synchronized(this@SoundSwarmClient) {
+                    currentNetworkCallback = null
+                }
             }
 
             override fun onLost(network: Network) {
                 Log.w(TAG, "Wi-Fi network lost")
                 cm.bindProcessToNetwork(null)
+                synchronized(this@SoundSwarmClient) {
+                    currentNetworkCallback = null
+                }
             }
-        })
+        }
+
+        currentNetworkCallback = callback
+
+        try {
+            cm.requestNetwork(request, callback)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "SecurityException requesting network. Ensure CHANGE_NETWORK_STATE is granted.", e)
+            currentNetworkCallback = null
+            onResult(false, "Network permission denied")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to request network", e)
+            currentNetworkCallback = null
+            onResult(false, "Failed to request Wi-Fi network")
+        }
     }
 
     /**
      * Disconnects from the server and stops audio playback.
      */
+    @Synchronized
     fun disconnect() {
         Log.i(TAG, "Disconnecting...")
-        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        
+        currentNetworkCallback?.let {
+            try {
+                cm.unregisterNetworkCallback(it)
+            } catch (e: Exception) {
+                Log.w(TAG, "Error unregistering callback during disconnect", e)
+            }
+            currentNetworkCallback = null
+        }
+        
         cm.bindProcessToNetwork(null)
         nativeDisconnect()
     }

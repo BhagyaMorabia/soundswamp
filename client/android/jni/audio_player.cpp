@@ -33,11 +33,9 @@ bool AudioPlayer::start() {
         return false;
     }
 
-    // F5 fix: 4 bursts (≈10–15ms) instead of 2 (≈4ms).
-    // The jitter buffer provides mathematical synchronization so a larger hardware
-    // buffer does not affect global latency — it only prevents underruns from
-    // Android background CPU spikes (email sync, GC, etc.).
-    stream_->setBufferSizeInFrames(stream_->getFramesPerBurst() * 4);
+    // Reduced to 2 bursts (≈5-8ms) instead of 4, since WifiLock eliminates network jitter.
+    // This directly shaves ~10ms off the physical audio output delay.
+    stream_->setBufferSizeInFrames(stream_->getFramesPerBurst() * 2);
 
     result = stream_->requestStart();
     if (result != oboe::Result::OK) {

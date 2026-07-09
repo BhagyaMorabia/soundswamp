@@ -98,6 +98,11 @@ func (s *TCPServer) handleConnection(conn net.Conn) {
 	remoteAddr := conn.RemoteAddr().String()
 	s.logger.Info("new TCP connection", "remote", remoteAddr)
 
+	if tcpConn, ok := conn.(*net.TCPConn); ok {
+		tcpConn.SetKeepAlive(true)
+		tcpConn.SetKeepAlivePeriod(15 * time.Second)
+	}
+
 	defer conn.Close()
 
 	// Step 1: Read the JOIN_REQUEST
@@ -255,17 +260,10 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 	}()
 
 	for {
-		// Set read deadline to detect disconnects
-		conn.SetReadDeadline(time.Now().Add(session.HeartbeatTimeout))
-
 		msg, err := readTCPMessage(conn)
 		if err != nil {
 			if err == io.EOF {
 				return // clean disconnect
-			}
-			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				s.logger.Warn("client heartbeat timeout", "client", client.ID)
-				return
 			}
 			s.logger.Error("read error", "client", client.ID, "error", err)
 			return

@@ -231,11 +231,13 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 	interleavedBuf := make([]float32, frameSamples*format.Channels)
 
 	var demuxBufs [][]float32
+	var stereoBuf []float32
 	if demuxer != nil {
 		demuxBufs = make([][]float32, format.Channels)
 		for i := 0; i < format.Channels; i++ {
 			demuxBufs[i] = make([]float32, frameSamples)
 		}
+		stereoBuf = make([]float32, frameSamples*2)
 	}
 
 	// F1 fix: Audio time must be mathematical, not systemic.
@@ -268,20 +270,23 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 		}
 
 		// F1 fix: Compute the capture timestamp from sample count, not wall clock.
-		// This is immune to GC pauses: a pause delays the loop iteration but does
-		// not advance totalSamplesProcessed, so the timestamp remains accurate.
 		captureTs := pipelineStartUs + (totalSamplesProcessed*1_000_000)/int64(format.SampleRate)
 		
-		// Soft-sync check: if hardware drops frames, totalSamplesProcessed will lag behind
-		// real time. Every ~10 seconds of audio, check against the wall clock.
-		if totalSamplesProcessed > 0 && totalSamplesProcessed%(10*int64(format.SampleRate)) == 0 {
-			nowUs := ssync.ServerTimeNow()
-			deltaUs := nowUs - captureTs
-			if deltaUs > 50000 || deltaUs < -50000 { // 50ms threshold
-				logger.Warn("Hardware audio drift detected, soft-syncing", "delta_us", deltaUs)
-				pipelineStartUs += deltaUs
-				captureTs += deltaUs
-			}
+		// Soft-sync check: handle hardware clock drift and WASAPI silence gaps.
+		nowUs := ssync.ServerTimeNow()
+		deltaUs := nowUs - captureTs
+		
+		if deltaUs > 100000 || deltaUs < -100000 { 
+			// >100ms drift means a huge gap (e.g. WASAPI paused during silence). Snap instantly.
+			logger.Warn("Large audio gap detected, snapping timestamp", "delta_us", deltaUs)
+			pipelineStartUs += deltaUs
+			captureTs += deltaUs
+		} else if deltaUs > 5000 {
+			// Slew forward by 20us per frame (4ms/sec correction rate)
+			pipelineStartUs += 20
+		} else if deltaUs < -5000 {
+			// Slew backward by 20us per frame
+			pipelineStartUs -= 20
 		}
 		
 		totalSamplesProcessed += int64(n / format.Channels)
@@ -303,11 +308,12 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 					continue
 				}
 				channelMask := layout.Mapping[chIdx]
-				streamMgr.SendAudio(encoded, channelMask, captureTs)
+				streamMgr.SendAudio(encoded, channelMask, captureTs, protocol.CodecPCM)
+				codec.ReturnEncoderBuffer(encoded)
 			}
 			
 			// Generate stereo downmix for clients not assigned a specific surround channel
-			stereoBuf, err := surround.DownmixToStereo(demuxBufs, layout)
+			err = surround.DownmixToStereoInto(demuxBufs, layout, stereoBuf)
 			if err == nil {
 				// We need a dedicated stereo encoder for the downmix in a full implementation.
 				// For brevity here, we encode the left channel of the downmix as stereo-mix if we had to.
@@ -321,7 +327,8 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 				logger.Error("Encode error", "error", err)
 				continue
 			}
-			streamMgr.SendAudio(encoded, protocol.ChannelStereoMix, captureTs)
+			streamMgr.SendAudio(encoded, protocol.ChannelStereoMix, captureTs, protocol.CodecPCM)
+			codec.ReturnEncoderBuffer(encoded)
 		}
 	}
 }

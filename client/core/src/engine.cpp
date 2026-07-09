@@ -165,6 +165,9 @@ Engine::~Engine() {
 bool Engine::start() {
     if (isConnected_) return true;
 
+    // Pre-allocate decode buffer to prevent allocation on the hot UDP receive thread
+    decodeBuffer_.reserve(48000 * 2); // Capacious enough for very large PLC frames
+    
     // 1. Start UDP receiver on any available port
     if (!network_->startUDP(0)) {
         if (onConnectionStatus_) onConnectionStatus_(false, "Failed to bind UDP socket");
@@ -226,8 +229,6 @@ void Engine::readAudio(float* outPcm, size_t numFrames, int64_t playoutTimestamp
     size_t written = jitterBuffer_->pull(outPcm, numFrames,
                                          playoutTimestampUs,
                                          clockSync_->getOffsetUs());
-    LOGD("readAudio: requested=%zu written=%zu offset_us=%lld",
-         numFrames, written, (long long)clockSync_->getOffsetUs());
 }
 
 void Engine::setConnectionCallback(std::function<void(bool, const std::string&)> cb) {
@@ -325,14 +326,14 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
             if (lostPackets > 10) lostPackets = 10;
             
             for (uint32_t i = 1; i <= lostPackets; ++i) {
-                std::vector<float> missingPcm;
-                if (decoder_->decodeMissing(missingPcm) && !missingPcm.empty()) {
+                decodeBuffer_.clear();
+                if (decoder_->decodeMissing(decodeBuffer_) && !decodeBuffer_.empty()) {
                     // Interpolate the timestamp for the missing packet
                     int64_t frameDurationUs = (decoder_->getFrameSamples() * 1000000LL) / config_.sampleRate;
                     int64_t interpolatedTs = pkt.timestampUs - (lostPackets - i + 1) * frameDurationUs;
                     
-                    jitterBuffer_->push(missingPcm.data(),
-                                        missingPcm.size() / static_cast<size_t>(config_.channels),
+                    jitterBuffer_->push(decodeBuffer_.data(),
+                                        decodeBuffer_.size() / static_cast<size_t>(config_.channels),
                                         interpolatedTs,
                                         localRecvTs,
                                         clockSync_->getOffsetUs());
@@ -342,17 +343,12 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
         }
         lastSeqNum_ = pkt.seqNum;
 
-        std::vector<float> pcm;
-        bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pcm);
+        decodeBuffer_.clear();
+        bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pkt.codecFlag, decodeBuffer_);
 
-        LOGD("UDP Audio: payload=%zu decode=%d pcm_frames=%zu seq=%u ts=%lld",
-             pkt.payload.size(), (int)decodeOk,
-             decodeOk ? pcm.size() / config_.channels : 0,
-             pkt.seqNum, (long long)pkt.timestampUs);
-
-        if (decodeOk && !pcm.empty()) {
-            jitterBuffer_->push(pcm.data(),
-                                pcm.size() / static_cast<size_t>(config_.channels),
+        if (decodeOk && !decodeBuffer_.empty()) {
+            jitterBuffer_->push(decodeBuffer_.data(),
+                                decodeBuffer_.size() / static_cast<size_t>(config_.channels),
                                 pkt.timestampUs,
                                 localRecvTs,
                                 clockSync_->getOffsetUs());
@@ -381,9 +377,8 @@ void Engine::maintenanceLoop() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (!isConnected_) continue;
         loops++;
-
-        // Every 3 seconds: Heartbeat
-        if (loops % 3 == 0) {
+        // Every 2 seconds: Send Heartbeat to prevent 10s server timeout
+        if (loops % 2 == 0) {
             network_->sendTCPMessage("{\"type\": \"HEARTBEAT\"}");
         }
 

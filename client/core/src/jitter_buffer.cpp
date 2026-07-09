@@ -126,8 +126,6 @@ size_t JitterBuffer::pull(float* outPcm, size_t numFrames,
             // This frame is too old — skip it.
             tail_.store(tail + 1, std::memory_order_release);
             frameReadOffset_ = 0;
-            LOGD("pull: dropping stale frame ts=%lld target=%lld",
-                 (long long)frame.captureTimestampUs, (long long)currentTargetUs);
             continue;
         }
 
@@ -160,9 +158,6 @@ size_t JitterBuffer::pull(float* outPcm, size_t numFrames,
     // Fill any remaining output with silence (underrun concealment).
     if (outOffset < samplesNeeded) {
         std::fill(outPcm + outOffset, outPcm + samplesNeeded, 0.0f);
-        if (outOffset == 0) {
-            LOGD("pull: full underrun (buffer empty or too far ahead)");
-        }
     }
 
     return numFrames;

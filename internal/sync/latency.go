@@ -169,8 +169,17 @@ func (le *LatencyEqualizer) recalculate() {
 		newDelay = MaxGlobalDelayMs
 	}
 
+	// Hysteresis: Allow latency to go up instantly (to prevent underruns),
+	// but only allow it to go down VERY slowly (2ms per 5 seconds) to prevent
+	// massive audio skips on the clients.
+	if newDelay < le.globalDelay {
+		if le.globalDelay-newDelay > 2.0 {
+			newDelay = le.globalDelay - 2.0
+		}
+	}
+
 	// Only broadcast if the delay actually changed significantly
-	if math.Abs(newDelay-le.globalDelay) < 1.0 {
+	if math.Abs(newDelay-le.globalDelay) < 0.5 {
 		return
 	}
 
