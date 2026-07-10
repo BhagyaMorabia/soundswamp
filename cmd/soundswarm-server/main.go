@@ -266,6 +266,7 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 			continue
 		}
 		if n == 0 {
+			logger.Info("debug: cap.Read returned 0")
 			continue
 		}
 
@@ -315,13 +316,12 @@ func runAudioPipeline(ctx context.Context, cap capture.AudioCapture, demuxer *su
 			// Generate stereo downmix for clients not assigned a specific surround channel
 			err = surround.DownmixToStereoInto(demuxBufs, layout, stereoBuf)
 			if err == nil {
-				// We need a dedicated stereo encoder for the downmix in a full implementation.
-				// For brevity here, we encode the left channel of the downmix as stereo-mix if we had to.
 				_ = stereoBuf
 			}
 
 		} else {
 			// Stereo/Mono mode: encode interleaved directly
+			logger.Debug("Encoding stereo/mono...")
 			encoded, err := encoders[0].Encode(interleavedBuf)
 			if err != nil {
 				logger.Error("Encode error", "error", err)

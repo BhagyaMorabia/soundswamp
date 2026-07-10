@@ -40,7 +40,7 @@ func DefaultEncoderConfig() EncoderConfig {
 		SampleRate: SampleRate,
 		Channels:   2,
 		Bitrate:    128000,
-		FrameMs:    5,
+		FrameMs:    10,
 		FEC:        true,
 		VBR:        true,
 	}

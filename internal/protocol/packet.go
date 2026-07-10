@@ -40,6 +40,7 @@ const (
 	PacketTypeAudio          PacketType = 0x01
 	PacketTypeClockSyncProbe PacketType = 0x02
 	PacketTypeClockSyncReply PacketType = 0x03
+	PacketTypeKeepAlive      PacketType = 0x04
 )
 
 // ChannelMask identifies which surround channel an audio packet carries.

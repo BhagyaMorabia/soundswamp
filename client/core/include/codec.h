@@ -32,7 +32,8 @@ private:
     OpusDecoder* decoder_;
     int sampleRate_;
     int channels_;
-    int maxFrameSamples_; 
+    int maxFrameSamples_;
+    CodecFlag lastCodecFlag_ = CodecFlag::Opus;
 };
 
 } // namespace soundswarm

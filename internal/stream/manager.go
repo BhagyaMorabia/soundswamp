@@ -62,6 +62,9 @@ type Manager struct {
 	
 	// Pacing
 	lastSendUnixNano atomic.Int64
+
+	// qWAVE QoS
+	qos *QOSManager
 }
 
 // NewManager creates a new stream manager bound to the given UDP port.
@@ -79,8 +82,17 @@ func NewManager(port int, logger *slog.Logger) (*Manager, error) {
 	conn.SetWriteBuffer(2 * 1024 * 1024)
 
 	// Enable QoS / DSCP Expedited Forwarding (0xB8)
+	// (Note: This is ignored by modern Windows, but kept for legacy/other OS)
 	if p4 := ipv4.NewConn(conn); p4 != nil {
 		_ = p4.SetTOS(0xB8)
+	}
+
+	// Initialize qWAVE API for native Windows QoS
+	qos := NewQOSManager(logger.With("module", "qos"))
+	if qos != nil {
+		if err := qos.AddUDPSocketToVoiceFlow(conn); err != nil {
+			logger.Warn("Failed to add socket to qWAVE flow", "error", err)
+		}
 	}
 
 	m := &Manager{
@@ -90,6 +102,7 @@ func NewManager(port int, logger *slog.Logger) (*Manager, error) {
 		stopChan:      make(chan struct{}),
 		broadcastChan: make(chan broadcastPacket, 200), // Buffer for 200 frames (2 seconds)
 		packetBuf:     make([]byte, protocol.MaxPacketSize),
+		qos:           qos,
 	}
 	
 	go m.broadcastLoop()
@@ -301,6 +314,18 @@ func (m *Manager) StartReceiver() {
 				// Process clock sync reply (handled by clock sync engine)
 				_ = pkt // forwarded to clock sync via callback if needed
 
+			case protocol.PacketTypeKeepAlive:
+				// NAT Hole Punch: Update client's UDP address dynamically
+				clientID := string(pkt.Payload)
+				m.mu.Lock()
+				if cs, ok := m.clients[clientID]; ok {
+					if cs.Addr.String() != remoteAddr.String() {
+						m.logger.Info("updated client UDP address via KeepAlive", "client_id", clientID, "old_addr", cs.Addr.String(), "new_addr", remoteAddr.String())
+						cs.Addr = remoteAddr
+					}
+				}
+				m.mu.Unlock()
+
 			default:
 				m.logger.Warn("unexpected UDP packet type",
 					"type", pkt.Type,
@@ -315,6 +340,9 @@ func (m *Manager) StartReceiver() {
 func (m *Manager) Stop() {
 	m.running.Store(false)
 	close(m.stopChan)
+	if m.qos != nil {
+		m.qos.Close()
+	}
 	m.conn.Close()
 }
 

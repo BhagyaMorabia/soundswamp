@@ -14,7 +14,8 @@ constexpr size_t MAX_PACKET_SIZE = 1400;
 enum class PacketType : uint8_t {
     Audio = 1,
     ClockSyncProbe = 2,
-    ClockSyncReply = 3
+    ClockSyncReply = 3,
+    KeepAlive = 4
 };
 
 // Channel Masks

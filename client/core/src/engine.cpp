@@ -377,9 +377,19 @@ void Engine::maintenanceLoop() {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (!isConnected_) continue;
         loops++;
-        // Every 2 seconds: Send Heartbeat to prevent 10s server timeout
+        // Every 2 seconds: Send TCP and UDP Heartbeat
         if (loops % 2 == 0) {
             network_->sendTCPMessage("{\"type\": \"HEARTBEAT\"}");
+
+            // Send UDP KeepAlive to punch through NAT/Firewalls
+            UDPPacket keepAlive;
+            keepAlive.version = PROTOCOL_VERSION;
+            keepAlive.type = PacketType::KeepAlive;
+            keepAlive.seqNum = 0;
+            keepAlive.timestampUs = clockSync_->getLocalTimeUs();
+            keepAlive.channelMask = ChannelMask::StereoMix;
+            keepAlive.payload.assign(clientId_.begin(), clientId_.end());
+            network_->sendUDPPacket(config_.serverIp, config_.udpPort, keepAlive.serialize());
         }
 
         // Every 5 seconds: Jitter report

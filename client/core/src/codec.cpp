@@ -36,6 +36,8 @@ Decoder::~Decoder() {
 }
 
 bool Decoder::decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm) {
+    lastCodecFlag_ = flag;
+    
     if (flag == CodecFlag::PCM) {
         int pcmSamples = length / 2;
         outPcm.resize(pcmSamples);
@@ -81,6 +83,11 @@ bool Decoder::decode(const uint8_t* opusData, size_t length, CodecFlag flag, std
 
 bool Decoder::decodeMissing(std::vector<float>& outPcm) {
     outPcm.resize(maxFrameSamples_ * channels_);
+
+    if (lastCodecFlag_ == CodecFlag::PCM) {
+        std::fill(outPcm.begin(), outPcm.end(), 0.0f);
+        return true;
+    }
 
     // Passing nullptr to opusData triggers Packet Loss Concealment
     // We request a standard 10ms frame size for PLC

@@ -32,7 +32,7 @@ const (
 	DefaultHeadroomMs = 20.0
 
 	// MinGlobalDelayMs prevents the global delay from being unreasonably small.
-	MinGlobalDelayMs = 30.0
+	MinGlobalDelayMs = 20.0
 
 	// MaxGlobalDelayMs caps the global delay to prevent excessive latency.
 	MaxGlobalDelayMs = 500.0
