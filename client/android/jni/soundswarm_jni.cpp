@@ -15,6 +15,7 @@ static std::mutex g_jniMu;
 std::string jstring2string(JNIEnv *env, jstring jStr) {
     if (!jStr) return "";
     const char *chars = env->GetStringUTFChars(jStr, nullptr);
+    if (!chars) return ""; // JVM OOM — cannot allocate
     std::string ret(chars);
     env->ReleaseStringUTFChars(jStr, chars);
     return ret;
