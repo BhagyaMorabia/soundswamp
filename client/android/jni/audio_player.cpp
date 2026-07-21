@@ -59,33 +59,39 @@ void AudioPlayer::stop() {
 oboe::DataCallbackResult AudioPlayer::onAudioReady(oboe::AudioStream *oboeStream, void *audioData, int32_t numFrames) {
     float *floatData = static_cast<float *>(audioData);
 
-    // Calculate physical playout timestamp
-    // We get the timestamp of the frame that is currently at the DAC,
-    // and extrapolate it to find out when the *first frame of this buffer* will hit the DAC.
-    
-    int64_t framePosition = 0;
-    int64_t timeNanoseconds = 0;
-    int64_t playoutTimestampUs = 0;
-    
-    auto result = oboeStream->getTimestamp(CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
-    if (result == oboe::Result::OK) {
-        // framePosition is the frame index that hit the DAC at timeNanoseconds
-        // We want the time when oboeStream->getFramesWritten() will hit the DAC
-        int64_t framesAhead = oboeStream->getFramesWritten() - framePosition;
-        int64_t timeAheadNs = (framesAhead * 1000000000LL) / oboeStream->getSampleRate();
-        int64_t targetTimeNs = timeNanoseconds + timeAheadNs;
+    try {
+        // Calculate physical playout timestamp
+        // We get the timestamp of the frame that is currently at the DAC,
+        // and extrapolate it to find out when the *first frame of this buffer* will hit the DAC.
         
-        // Convert monotonic nanoseconds to microseconds (matching ClockSync::getLocalTimeUs)
-        playoutTimestampUs = targetTimeNs / 1000LL;
-    } else {
-        // Fallback if timestamp query fails: estimate based on current time + buffer size
-        int64_t latencyFrames = oboeStream->getBufferSizeInFrames();
-        int64_t latencyUs = (latencyFrames * 1000000LL) / oboeStream->getSampleRate();
-        playoutTimestampUs = ClockSync::getLocalTimeUs() + latencyUs;
-    }
+        int64_t framePosition = 0;
+        int64_t timeNanoseconds = 0;
+        int64_t playoutTimestampUs = 0;
+        
+        auto result = oboeStream->getTimestamp(CLOCK_MONOTONIC, &framePosition, &timeNanoseconds);
+        if (result == oboe::Result::OK) {
+            // framePosition is the frame index that hit the DAC at timeNanoseconds
+            // We want the time when oboeStream->getFramesWritten() will hit the DAC
+            int64_t framesAhead = oboeStream->getFramesWritten() - framePosition;
+            int64_t timeAheadNs = (framesAhead * 1000000000LL) / oboeStream->getSampleRate();
+            int64_t targetTimeNs = timeNanoseconds + timeAheadNs;
+            
+            // Convert monotonic nanoseconds to microseconds (matching ClockSync::getLocalTimeUs)
+            playoutTimestampUs = targetTimeNs / 1000LL;
+        } else {
+            // Fallback if timestamp query fails: estimate based on current time + buffer size
+            int64_t latencyFrames = oboeStream->getBufferSizeInFrames();
+            int64_t latencyUs = (latencyFrames * 1000000LL) / oboeStream->getSampleRate();
+            playoutTimestampUs = ClockSync::getLocalTimeUs() + latencyUs;
+        }
 
-    // Pull synchronized audio from the core engine
-    engine_->readAudio(floatData, numFrames, playoutTimestampUs);
+        // Pull synchronized audio from the core engine
+        engine_->readAudio(floatData, numFrames, playoutTimestampUs);
+    } catch (...) {
+        // Fill with silence to prevent SIGABRT from exceptions escaping the native callback
+        std::memset(floatData, 0, numFrames * 2 * sizeof(float));
+        LOGE("Exception caught in onAudioReady — outputting silence");
+    }
 
     return oboe::DataCallbackResult::Continue;
 }

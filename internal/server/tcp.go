@@ -236,6 +236,11 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 	syncTicker := time.NewTicker(ssync.PeriodicSyncInterval)
 	defer syncTicker.Stop()
 
+	// Per-client shutdown channel — prevents goroutine leak on disconnect.
+	// Without this, the sync goroutine only exits on server shutdown (s.quit),
+	// meaning every client disconnect leaks a goroutine forever.
+	clientDone := make(chan struct{})
+
 	syncDone := make(chan struct{})
 	go func() {
 		defer close(syncDone)
@@ -245,6 +250,8 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 				if err := s.config.ClockSync.SendPeriodicProbe(client.ID, conn); err != nil {
 					s.logger.Warn("periodic sync failed", "client", client.ID, "error", err)
 				}
+			case <-clientDone:
+				return
 			case <-s.quit:
 				return
 			}
@@ -255,6 +262,7 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 	client.SetWriteFunc(safeWrite)
 
 	defer func() {
+		close(clientDone) // Signal the sync goroutine to exit
 		syncTicker.Stop()
 		<-syncDone
 	}()

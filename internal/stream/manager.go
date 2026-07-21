@@ -193,6 +193,7 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 		codecFlag:        codecFlag,
 	}:
 	default:
+		payloadPool.Put(ptr)
 		m.logger.Warn("broadcast channel full, dropping audio frame")
 	}
 }
