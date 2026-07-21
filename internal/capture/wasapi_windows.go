@@ -187,7 +187,7 @@ func (w *WASAPICapture) Start() error {
 
 	w.captureEvent, _ = windows.CreateEvent(nil, 0, 0, nil)
 	if w.captureEvent != 0 {
-		vSetEventHandle(audioClient, w.captureEvent)
+		vSetEventHandle(audioClient, uintptr(w.captureEvent))
 	}
 
 	// Get capture client
