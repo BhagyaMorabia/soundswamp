@@ -226,7 +226,7 @@ func (cs *ClockSync) InitialHandshake(clientID string, conn io.ReadWriter) error
 
 // SendPeriodicProbe sends a single clock sync probe to measure drift.
 // Should be called every PeriodicSyncInterval.
-func (cs *ClockSync) SendPeriodicProbe(clientID string, conn io.ReadWriter) error {
+func (cs *ClockSync) SendPeriodicProbe(clientID string, sendFunc func(interface{}) error) error {
 	cs.mu.RLock()
 	_, exists := cs.clients[clientID]
 	cs.mu.RUnlock()
@@ -234,15 +234,13 @@ func (cs *ClockSync) SendPeriodicProbe(clientID string, conn io.ReadWriter) erro
 		return fmt.Errorf("unknown client: %s", clientID)
 	}
 
-	rw := newTCPRW(conn)
-
 	// Single-round probe
 	serverSendTs := ServerTimeNow()
 	probe := protocol.ClockSyncProbeMsg{
 		Type:         protocol.MsgClockSyncProbe,
 		ServerSendTs: serverSendTs,
 	}
-	if err := rw.WriteMessage(probe); err != nil {
+	if err := sendFunc(probe); err != nil {
 		return fmt.Errorf("send probe: %w", err)
 	}
 

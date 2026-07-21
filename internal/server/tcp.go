@@ -247,7 +247,7 @@ func (s *TCPServer) clientReadLoop(client *session.Client, conn net.Conn, sess *
 		for {
 			select {
 			case <-syncTicker.C:
-				if err := s.config.ClockSync.SendPeriodicProbe(client.ID, conn); err != nil {
+				if err := s.config.ClockSync.SendPeriodicProbe(client.ID, safeWrite); err != nil {
 					s.logger.Warn("periodic sync failed", "client", client.ID, "error", err)
 				}
 			case <-clientDone:
