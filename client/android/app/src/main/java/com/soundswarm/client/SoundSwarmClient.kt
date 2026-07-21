@@ -64,7 +64,6 @@ class SoundSwarmClient(context: Context) {
 
         val request = NetworkRequest.Builder()
             .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .removeCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
 
         val callback = object : ConnectivityManager.NetworkCallback() {
