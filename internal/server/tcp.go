@@ -330,12 +330,14 @@ func (s *TCPServer) BroadcastToAll(msg interface{}) {
 	}
 
 	sess.ForEachClient(func(client *session.Client) {
-		if err := client.Send(msg); err != nil {
-			s.logger.Warn("broadcast failed",
-				"client", client.ID,
-				"error", err,
-			)
-		}
+		go func(c *session.Client) {
+			if err := c.Send(msg); err != nil {
+				s.logger.Warn("broadcast failed",
+					"client", c.ID,
+					"error", err,
+				)
+			}
+		}(client)
 	})
 }
 

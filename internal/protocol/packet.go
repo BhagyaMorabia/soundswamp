@@ -157,34 +157,34 @@ func (p *Packet) MarshalInto(buf []byte) (int, error) {
 // Unmarshal parses raw UDP bytes into a Packet. The Payload field references
 // a sub-slice of data; callers must copy it if they need to retain it beyond
 // the lifetime of data.
-func Unmarshal(data []byte) (*Packet, error) {
+func (p *Packet) Unmarshal(data []byte) error {
 	if len(data) < HeaderSize {
-		return nil, ErrPacketTooShort
+		return ErrPacketTooShort
 	}
 
 	ver := data[0]
 	if ver != ProtocolVersion {
-		return nil, fmt.Errorf("%w: got %d, want %d", ErrBadVersion, ver, ProtocolVersion)
+		return fmt.Errorf("%w: got %d, want %d", ErrBadVersion, ver, ProtocolVersion)
 	}
 
 	payloadLen := int(binary.BigEndian.Uint16(data[16:18]))
 	if payloadLen > MaxPayloadSize {
-		return nil, ErrPayloadTooLarge
+		return ErrPayloadTooLarge
 	}
 	if len(data) < HeaderSize+payloadLen {
-		return nil, fmt.Errorf("%w: header says %d bytes, packet has %d after header",
+		return fmt.Errorf("%w: header says %d bytes, packet has %d after header",
 			ErrPayloadMismatch, payloadLen, len(data)-HeaderSize)
 	}
 
-	return &Packet{
-		Version:     ver,
-		Type:        PacketType(data[1]),
-		SeqNum:      binary.BigEndian.Uint32(data[2:6]),
-		TimestampUs: int64(binary.BigEndian.Uint64(data[6:14])),
-		ChannelMask: ChannelMask(data[14]),
-		Codec:       CodecFlag(data[15]),
-		Payload:     data[HeaderSize : HeaderSize+payloadLen],
-	}, nil
+	p.Version = ver
+	p.Type = PacketType(data[1])
+	p.SeqNum = binary.BigEndian.Uint32(data[2:6])
+	p.TimestampUs = int64(binary.BigEndian.Uint64(data[6:14]))
+	p.ChannelMask = ChannelMask(data[14])
+	p.Codec = CodecFlag(data[15])
+	p.Payload = data[HeaderSize : HeaderSize+payloadLen]
+
+	return nil
 }
 
 // -------------------------------------------------------------------

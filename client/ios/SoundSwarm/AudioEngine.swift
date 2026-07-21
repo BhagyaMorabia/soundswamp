@@ -10,11 +10,22 @@ class AudioEngineManager {
     // The C++ engine uses steady_clock, which on iOS maps to mach_absolute_time.
     // We need the mach_timebase_info to convert.
     private var timebaseInfo = mach_timebase_info_data_t()
+    
+    // Fix 8: Pre-allocate interleaved PCM buffer to avoid hot loop allocations
+    private let interleavedPcmCapacity = 48000 * 2 // 1 second buffer just in case
+    private let interleavedPcm: UnsafeMutablePointer<Float>
 
     init(wrapper: SoundSwarmWrapper) {
         self.wrapper = wrapper
+        self.interleavedPcm = UnsafeMutablePointer<Float>.allocate(capacity: interleavedPcmCapacity)
+        self.interleavedPcm.initialize(repeating: 0.0, count: interleavedPcmCapacity)
         mach_timebase_info(&timebaseInfo)
         setupAudioEngine()
+    }
+
+    deinit {
+        interleavedPcm.deinitialize(count: interleavedPcmCapacity)
+        interleavedPcm.deallocate()
     }
 
     private func setupAudioEngine() {
@@ -44,8 +55,8 @@ class AudioEngineManager {
         guard let floatChannelData = buffer.floatChannelData else { return }
         let numFrames = Int(buffer.frameLength)
         
-        // Interleaved buffer for C++ Engine
-        var interleavedPcm = [Float](repeating: 0.0, count: numFrames * 2)
+        // Check capacity to be safe
+        if numFrames * 2 > interleavedPcmCapacity { return }
 
         // Calculate physical playout timestamp using mach_absolute_time
         // AVAudioTime.hostTime is in mach absolute time units
@@ -61,7 +72,7 @@ class AudioEngineManager {
         }
 
         // Pull synchronized audio from C++
-        wrapper.readAudio(&interleavedPcm, numFrames: numFrames, playoutTimestampUs: playoutTimestampUs)
+        wrapper.readAudio(interleavedPcm, numFrames: numFrames, playoutTimestampUs: playoutTimestampUs)
 
         // De-interleave for AVAudioPCMBuffer (which uses non-interleaved channels)
         let leftChannel = floatChannelData[0]

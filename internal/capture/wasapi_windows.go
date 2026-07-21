@@ -123,6 +123,7 @@ func (w *WASAPICapture) Start() error {
 			return fmt.Errorf("CoInitializeEx failed: %w", err)
 		}
 	}
+	defer windows.CoUninitialize()
 
 	// Create the device enumerator
 	var enumerator uintptr
@@ -178,10 +179,15 @@ func (w *WASAPICapture) Start() error {
 	// Initialize audio client with loopback (polling mode)
 	// WASAPI loopback capture requires hnsBufferDuration=0 and hnsPeriodicity=0
 	hr = vInitialize(audioClient, audclntSharemode,
-		audclntLoopback,
+		audclntLoopback|audclntEventCallback,
 		0, 0, mixFormatPtr, 0)
 	if hr != 0 {
 		return fmt.Errorf("IAudioClient::Initialize failed: 0x%08X", hr)
+	}
+
+	w.captureEvent, _ = windows.CreateEvent(nil, 0, 0, nil)
+	if w.captureEvent != 0 {
+		vSetEventHandle(audioClient, w.captureEvent)
 	}
 
 	// Get capture client
@@ -312,6 +318,7 @@ func (w *WASAPICapture) captureLoop() {
 			return
 		}
 	}
+	defer windows.CoUninitialize()
 
 	// Set thread priority for audio via MMCSS
 	taskName, _ := windows.UTF16PtrFromString("Pro Audio")
@@ -322,8 +329,8 @@ func (w *WASAPICapture) captureLoop() {
 	}
 
 	for w.running.Load() {
-		// Poll for data every 10ms
-		time.Sleep(10 * time.Millisecond)
+		// Wait for data to be ready from WASAPI hardware
+		windows.WaitForSingleObject(w.captureEvent, 1000)
 		w.processCaptureBuffer()
 	}
 }

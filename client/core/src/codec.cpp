@@ -35,21 +35,25 @@ Decoder::~Decoder() {
     }
 }
 
-bool Decoder::decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm) {
-    lastCodecFlag_ = flag;
-    
+int Decoder::decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm) {
     if (flag == CodecFlag::PCM) {
+        lastCodecFlag_ = CodecFlag::PCM;
         int pcmSamples = length / 2;
-        outPcm.resize(pcmSamples);
+        int frames = pcmSamples / channels_;
         for (int i = 0; i < pcmSamples; ++i) {
             int16_t sample;
             std::memcpy(&sample, opusData + (i * 2), sizeof(int16_t));
             outPcm[i] = static_cast<float>(sample) / 32768.0f;
         }
-        return true;
+        return frames;
+    }
+    
+    lastCodecFlag_ = CodecFlag::Opus;
+
+    if (!decoder_) {
+        return -1;
     }
 
-    outPcm.resize(maxFrameSamples_ * channels_);
     int decodedSamples = opus_decode_float(
         decoder_,
         opusData,
@@ -59,34 +63,13 @@ bool Decoder::decode(const uint8_t* opusData, size_t length, CodecFlag flag, std
         0 // No FEC for now
     );
 
-    if (decodedSamples < 0) {
-        // Fallback: The Go server might be running without CGO (opus_cgo tag)
-        // In this mode, it sends raw 16-bit little-endian PCM instead of Opus.
-        // We accept any length that is a multiple of bytes-per-frame.
-        if (length > 0 && length % (channels_ * 2) == 0) {
-            int pcmSamples = length / 2; // total float samples across all channels
-            outPcm.resize(pcmSamples);
-            for (int i = 0; i < pcmSamples; ++i) {
-                int16_t sample;
-                std::memcpy(&sample, opusData + (i * 2), sizeof(int16_t));
-                outPcm[i] = static_cast<float>(sample) / 32768.0f;
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    outPcm.resize(decodedSamples * channels_);
-    return true;
+    return decodedSamples;
 }
 
-bool Decoder::decodeMissing(std::vector<float>& outPcm) {
-    outPcm.resize(maxFrameSamples_ * channels_);
-
+int Decoder::decodeMissing(std::vector<float>& outPcm) {
     if (lastCodecFlag_ == CodecFlag::PCM) {
         std::fill(outPcm.begin(), outPcm.end(), 0.0f);
-        return true;
+        return maxFrameSamples_;
     }
 
     // Passing nullptr to opusData triggers Packet Loss Concealment
@@ -102,12 +85,7 @@ bool Decoder::decodeMissing(std::vector<float>& outPcm) {
         0
     );
 
-    if (decodedSamples < 0) {
-        return false;
-    }
-
-    outPcm.resize(decodedSamples * channels_);
-    return true;
+    return decodedSamples;
 }
 
 int Decoder::getFrameSamples() const {

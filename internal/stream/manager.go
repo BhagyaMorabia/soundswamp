@@ -35,7 +35,8 @@ type ClientStream struct {
 
 // broadcastPacket encapsulates a frame for asynchronous transmission.
 type broadcastPacket struct {
-	opusData         []byte
+	opusDataPtr      *[]byte
+	length           int
 	channel          protocol.ChannelMask
 	captureTimestamp int64
 	codecFlag        protocol.CodecFlag
@@ -115,12 +116,11 @@ func (m *Manager) broadcastLoop() {
 		case <-m.stopChan:
 			return
 		case pkt := <-m.broadcastChan:
-			m.doSendAudio(pkt.opusData, pkt.channel, pkt.captureTimestamp, pkt.codecFlag)
+			m.doSendAudio((*pkt.opusDataPtr)[:pkt.length], pkt.channel, pkt.captureTimestamp, pkt.codecFlag)
 			
 			// Return payload to pool
-			if cap(pkt.opusData) == protocol.MaxPayloadSize {
-				buf := pkt.opusData[:cap(pkt.opusData)]
-				payloadPool.Put(&buf)
+			if cap(*pkt.opusDataPtr) == protocol.MaxPayloadSize {
+				payloadPool.Put(pkt.opusDataPtr)
 			}
 		}
 	}
@@ -186,7 +186,8 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 
 	select {
 	case m.broadcastChan <- broadcastPacket{
-		opusData:         dataCopy,
+		opusDataPtr:      ptr,
+		length:           len(opusData),
 		channel:          channel,
 		captureTimestamp: captureTimestamp,
 		codecFlag:        codecFlag,
@@ -198,8 +199,7 @@ func (m *Manager) SendAudio(opusData []byte, channel protocol.ChannelMask, captu
 
 func (m *Manager) doSendAudio(opusData []byte, channel protocol.ChannelMask, captureTimestamp int64, codecFlag protocol.CodecFlag) {
 	m.mu.RLock()
-	defer m.mu.RUnlock()
-
+	activeClients := make([]*ClientStream, 0, len(m.clients))
 	for _, cs := range m.clients {
 		if !cs.Active {
 			continue
@@ -212,6 +212,11 @@ func (m *Manager) doSendAudio(opusData []byte, channel protocol.ChannelMask, cap
 			cs.ChannelAssign != channel {
 			continue
 		}
+		activeClients = append(activeClients, cs)
+	}
+	m.mu.RUnlock()
+
+	for _, cs := range activeClients {
 
 		cs.SeqNum++
 		pkt := protocol.Packet{
@@ -300,7 +305,8 @@ func (m *Manager) StartReceiver() {
 				continue
 			}
 
-			pkt, err := protocol.Unmarshal(buf[:n])
+			var pkt protocol.Packet
+			err = pkt.Unmarshal(buf[:n])
 			if err != nil {
 				m.logger.Warn("invalid UDP packet",
 					"addr", remoteAddr.String(),

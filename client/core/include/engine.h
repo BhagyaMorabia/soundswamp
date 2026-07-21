@@ -75,6 +75,7 @@ private:
     // Periodic heartbeat/jitter maintenance thread.
     std::atomic<bool> running_;
     std::thread       maintenanceThread_;
+    std::mutex        clientMu_;
     void maintenanceLoop();
 };
 

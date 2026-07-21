@@ -11,17 +11,24 @@ import android.media.session.MediaSession
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 
 class KeepAliveService : Service() {
     private var wifiLock: WifiManager.WifiLock? = null
+    private var wakeLock: PowerManager.WakeLock? = null
     private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
         
-        // 1. Acquire High-Performance Wi-Fi Lock to destroy latency/jitter
+        // 1. CPU WakeLock (Prevents CPU from sleeping when screen is off)
+        val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "SoundSwarm::AudioCPU")
+        wakeLock?.acquire()
+
+        // 2. Acquire High-Performance Wi-Fi Lock to destroy latency/jitter
         val wifiManager = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         wifiLock = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_LOW_LATENCY, "SoundSwarm::LatencyLock")
@@ -59,6 +66,9 @@ class KeepAliveService : Service() {
         mediaSession?.release()
         if (wifiLock?.isHeld == true) {
             wifiLock?.release()
+        }
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
         }
     }
 

@@ -166,7 +166,7 @@ bool Engine::start() {
     if (isConnected_) return true;
 
     // Pre-allocate decode buffer to prevent allocation on the hot UDP receive thread
-    decodeBuffer_.reserve(48000 * 2); // Capacious enough for very large PLC frames
+    decodeBuffer_.resize(48000 * 2); // Capacious enough for very large PLC frames
     
     // 1. Start UDP receiver on any available port
     if (!network_->startUDP(0)) {
@@ -246,7 +246,10 @@ void Engine::handleTCPMessage(const std::string& jsonMsg) {
     std::string msgType = extractJsonString(jsonMsg, "\"type\"");
 
     if (msgType == "JOIN_ACCEPT") {
-        clientId_ = extractJsonString(jsonMsg, "\"client_id\"");
+        {
+            std::lock_guard<std::mutex> lock(clientMu_);
+            clientId_ = extractJsonString(jsonMsg, "\"client_id\"");
+        }
         // Note: we set isConnected_ here so the maintenance loop knows we're
         // authenticated, but we deliberately do NOT set handshakeComplete_ yet.
         // The audio thread will stay silent until clock sync finishes (F11 fix).
@@ -326,14 +329,14 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
             if (lostPackets > 10) lostPackets = 10;
             
             for (uint32_t i = 1; i <= lostPackets; ++i) {
-                decodeBuffer_.clear();
-                if (decoder_->decodeMissing(decodeBuffer_) && !decodeBuffer_.empty()) {
+                int decodedSamples = decoder_->decodeMissing(decodeBuffer_);
+                if (decodedSamples > 0) {
                     // Interpolate the timestamp for the missing packet
                     int64_t frameDurationUs = (decoder_->getFrameSamples() * 1000000LL) / config_.sampleRate;
                     int64_t interpolatedTs = pkt.timestampUs - (lostPackets - i + 1) * frameDurationUs;
                     
                     jitterBuffer_->push(decodeBuffer_.data(),
-                                        decodeBuffer_.size() / static_cast<size_t>(config_.channels),
+                                        static_cast<size_t>(decodedSamples),
                                         interpolatedTs,
                                         localRecvTs,
                                         clockSync_->getOffsetUs());
@@ -343,12 +346,11 @@ void Engine::handleUDPPacket(const uint8_t* data, size_t length) {
         }
         lastSeqNum_ = pkt.seqNum;
 
-        decodeBuffer_.clear();
-        bool decodeOk = decoder_->decode(pkt.payload.data(), pkt.payload.size(), pkt.codecFlag, decodeBuffer_);
+        int decodedSamples = decoder_->decode(pkt.payloadData, pkt.payloadSize, pkt.codecFlag, decodeBuffer_);
 
-        if (decodeOk && !decodeBuffer_.empty()) {
+        if (decodedSamples > 0) {
             jitterBuffer_->push(decodeBuffer_.data(),
-                                decodeBuffer_.size() / static_cast<size_t>(config_.channels),
+                                static_cast<size_t>(decodedSamples),
                                 pkt.timestampUs,
                                 localRecvTs,
                                 clockSync_->getOffsetUs());
@@ -382,14 +384,20 @@ void Engine::maintenanceLoop() {
             network_->sendTCPMessage("{\"type\": \"HEARTBEAT\"}");
 
             // Send UDP KeepAlive to punch through NAT/Firewalls
-            UDPPacket keepAlive;
-            keepAlive.version = PROTOCOL_VERSION;
-            keepAlive.type = PacketType::KeepAlive;
-            keepAlive.seqNum = 0;
-            keepAlive.timestampUs = clockSync_->getLocalTimeUs();
-            keepAlive.channelMask = ChannelMask::StereoMix;
-            keepAlive.payload.assign(clientId_.begin(), clientId_.end());
-            network_->sendUDPPacket(config_.serverIp, config_.udpPort, keepAlive.serialize());
+            {
+                std::lock_guard<std::mutex> lock(clientMu_);
+                if (!clientId_.empty()) {
+                    UDPPacket keepAlive;
+                    keepAlive.version = PROTOCOL_VERSION;
+                    keepAlive.type = PacketType::KeepAlive;
+                    keepAlive.seqNum = 0;
+                    keepAlive.timestampUs = clockSync_->getLocalTimeUs();
+                    keepAlive.channelMask = ChannelMask::StereoMix;
+                    keepAlive.payloadData = reinterpret_cast<const uint8_t*>(clientId_.c_str());
+                    keepAlive.payloadSize = clientId_.size();
+                    network_->sendUDPPacket(config_.serverIp, config_.udpPort, keepAlive.serialize());
+                }
+            }
         }
 
         // Every 5 seconds: Jitter report

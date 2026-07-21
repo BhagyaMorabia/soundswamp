@@ -49,13 +49,14 @@ bool UDPPacket::deserialize(const uint8_t* data, size_t length, UDPPacket& outPa
     // Sanity check
     if (UDP_HEADER_SIZE + payloadLen > length) return false;
 
-    outPacket.payload.assign(data + UDP_HEADER_SIZE, data + UDP_HEADER_SIZE + payloadLen);
+    outPacket.payloadData = data + UDP_HEADER_SIZE;
+    outPacket.payloadSize = payloadLen;
 
     return true;
 }
 
 std::vector<uint8_t> UDPPacket::serialize() const {
-    std::vector<uint8_t> buffer(UDP_HEADER_SIZE + payload.size());
+    std::vector<uint8_t> buffer(UDP_HEADER_SIZE + payloadSize);
 
     buffer[0] = version;
     buffer[1] = static_cast<uint8_t>(type);
@@ -69,11 +70,11 @@ std::vector<uint8_t> UDPPacket::serialize() const {
     buffer[14] = static_cast<uint8_t>(channelMask);
     buffer[15] = static_cast<uint8_t>(codecFlag);
 
-    uint16_t payloadLenNetwork = htons(static_cast<uint16_t>(payload.size()));
+    uint16_t payloadLenNetwork = htons(static_cast<uint16_t>(payloadSize));
     std::memcpy(buffer.data() + 16, &payloadLenNetwork, sizeof(uint16_t));
 
-    if (!payload.empty()) {
-        std::memcpy(buffer.data() + UDP_HEADER_SIZE, payload.data(), payload.size());
+    if (payloadSize > 0 && payloadData != nullptr) {
+        std::memcpy(buffer.data() + UDP_HEADER_SIZE, payloadData, payloadSize);
     }
 
     return buffer;

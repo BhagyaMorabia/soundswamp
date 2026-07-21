@@ -185,6 +185,7 @@ func (le *LatencyEqualizer) recalculate() {
 
 	oldDelay := le.globalDelay
 	le.globalDelay = newDelay
+	broadcaster := le.broadcaster
 
 	le.logger.Info("global latency updated",
 		"old_ms", oldDelay,
@@ -195,8 +196,8 @@ func (le *LatencyEqualizer) recalculate() {
 	)
 
 	// Broadcast to all clients
-	if le.broadcaster != nil {
-		le.broadcaster(newDelay)
+	if broadcaster != nil {
+		go broadcaster(newDelay)
 	}
 }
 

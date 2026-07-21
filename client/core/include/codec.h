@@ -20,11 +20,12 @@ public:
     Decoder& operator=(const Decoder&) = delete;
 
     // Decodes an audio packet into interleaved PCM float32.
-    // Returns true on success, false on error.
-    bool decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm);
+    // Returns the number of decoded samples per channel, or < 0 on error.
+    int decode(const uint8_t* opusData, size_t length, CodecFlag flag, std::vector<float>& outPcm);
 
     // Decodes a missing packet to trigger Packet Loss Concealment (PLC).
-    bool decodeMissing(std::vector<float>& outPcm);
+    // Returns the number of decoded samples per channel, or < 0 on error.
+    int decodeMissing(std::vector<float>& outPcm);
 
     int getFrameSamples() const;
 

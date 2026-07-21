@@ -26,6 +26,8 @@ public:
 private:
     std::shared_ptr<soundswarm::Engine> engine_;
     std::shared_ptr<oboe::AudioStream> stream_;
+    std::atomic<bool> isRestarting_{false};
+    std::mutex restartMu_;
 };
 
 } // namespace android

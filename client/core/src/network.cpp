@@ -76,6 +76,21 @@ bool BsdNetworkClient::connectTCP(const std::string& ip, int port) {
 #else
             fcntl(tcpSocket_, F_SETFL, flags);
 #endif
+
+            // Fix 14 & 15: Add SO_KEEPALIVE and SO_RCVTIMEO
+            int optval = 1;
+            setsockopt(tcpSocket_, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<const char*>(&optval), sizeof(optval));
+
+#ifdef _WIN32
+            DWORD timeoutMs = 2000;
+            setsockopt(tcpSocket_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&timeoutMs), sizeof(timeoutMs));
+#else
+            struct timeval rcvTimeout;
+            rcvTimeout.tv_sec = 2;
+            rcvTimeout.tv_usec = 0;
+            setsockopt(tcpSocket_, SOL_SOCKET, SO_RCVTIMEO, reinterpret_cast<const char*>(&rcvTimeout), sizeof(rcvTimeout));
+#endif
+
             tcpRunning_ = true;
             tcpThread_ = std::thread(&BsdNetworkClient::tcpReadLoop, this);
             return true;
@@ -137,6 +152,13 @@ void BsdNetworkClient::tcpReadLoop() {
         int headerRead = 0;
         while (headerRead < 4) {
             int r = recv(tcpSocket_, lenPtr + headerRead, 4 - headerRead, 0);
+            if (r < 0) {
+#ifdef _WIN32
+                if (WSAGetLastError() == WSAETIMEDOUT || WSAGetLastError() == WSAEWOULDBLOCK) continue;
+#else
+                if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+#endif
+            }
             if (r <= 0) {
                 tcpRunning_ = false;
                 break;
@@ -152,6 +174,13 @@ void BsdNetworkClient::tcpReadLoop() {
         int totalRead = 0;
         while (totalRead < len) {
             int r = recv(tcpSocket_, buffer.data() + totalRead, len - totalRead, 0);
+            if (r < 0) {
+#ifdef _WIN32
+                if (WSAGetLastError() == WSAETIMEDOUT || WSAGetLastError() == WSAEWOULDBLOCK) continue;
+#else
+                if (errno == EAGAIN || errno == EWOULDBLOCK) continue;
+#endif
+            }
             if (r <= 0) {
                 tcpRunning_ = false;
                 break;

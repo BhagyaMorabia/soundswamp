@@ -94,13 +94,14 @@ void AudioPlayer::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result 
     LOGE("Oboe stream closed due to error: %s — attempting restart",
          oboe::convertToText(error));
 
-    // F17 fix: Restart the stream after device changes (headphone plug/unplug,
-    // Bluetooth connect/disconnect, etc.). Without this, audio stops permanently.
-    //
-    // Oboe recommends restarting from a separate thread to avoid deadlock inside
-    // the error callback. We use a detached thread for simplicity; a production
-    // app would use a more robust restart manager.
+    bool expected = false;
+    if (!isRestarting_.compare_exchange_strong(expected, true)) {
+        LOGI("Restart already in progress, ignoring duplicate error callback.");
+        return;
+    }
+
     std::thread restartThread([this]() {
+        std::lock_guard<std::mutex> lock(restartMu_);
         // Brief pause to let the OS settle after a device change.
         std::this_thread::sleep_for(std::chrono::milliseconds(200));
         stop();
@@ -109,6 +110,7 @@ void AudioPlayer::onErrorAfterClose(oboe::AudioStream *oboeStream, oboe::Result 
         } else {
             LOGE("Oboe stream restart failed.");
         }
+        isRestarting_ = false;
     });
     restartThread.detach();
 }

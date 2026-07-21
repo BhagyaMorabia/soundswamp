@@ -4,9 +4,12 @@
 #include "engine.h"
 #include "audio_player.h"
 
+#include <mutex>
+
 // Global pointers for the JNI wrapper
 static std::shared_ptr<soundswarm::Engine> g_engine;
 static std::unique_ptr<soundswarm::android::AudioPlayer> g_audioPlayer;
+static std::mutex g_jniMu;
 
 // Helper to convert jstring to std::string
 std::string jstring2string(JNIEnv *env, jstring jStr) {
@@ -27,6 +30,7 @@ Java_com_soundswarm_client_SoundSwarmClient_nativeConnect(
         jstring jToken,
         jstring jDeviceName) {
     
+    std::lock_guard<std::mutex> lock(g_jniMu);
     try {
         if (g_engine) {
             // Already connected
@@ -72,6 +76,7 @@ Java_com_soundswarm_client_SoundSwarmClient_nativeDisconnect(
         JNIEnv* env,
         jobject /* this */) {
     
+    std::lock_guard<std::mutex> lock(g_jniMu);
     if (g_audioPlayer) {
         g_audioPlayer->stop();
         g_audioPlayer.reset();

@@ -45,7 +45,11 @@ struct UDPPacket {
     int64_t timestampUs;
     ChannelMask channelMask;
     CodecFlag codecFlag;
-    std::vector<uint8_t> payload;
+    
+    // Points directly to the network buffer for incoming packets to avoid allocation.
+    // For outgoing packets, it points to local data.
+    const uint8_t* payloadData = nullptr;
+    size_t payloadSize = 0;
 
     // Deserializes a raw byte buffer into a UDPPacket
     static bool deserialize(const uint8_t* data, size_t length, UDPPacket& outPacket);
